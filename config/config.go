@@ -13,7 +13,7 @@ var GlobalConfig = &AllConfig{
 		RunMode: "debug",
 	},
 	App: &AppConfig{
-		JwtSecret: "!@)*#)!@U#@*!@!)",
+		// JwtSecret: "!@)*#)!@U#@*!@!)",
 	},
 	Server: &ServerConfig{
 		HTTPPort:     8000,
@@ -44,6 +44,7 @@ type BaseConfig struct {
 }
 type AppConfig struct {
 	JwtSecret string `ini:"jwt_secret"`
+	JwtIssuer string `ini:"jwt_issuer"`
 }
 type ServerConfig struct {
 	HTTPPort     int           `ini:"http_port"`
