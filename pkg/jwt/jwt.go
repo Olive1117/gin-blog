@@ -2,16 +2,15 @@ package jwt
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var (
-	ErrTokenInvalid       = errors.New("token 签名无效或已被篡改")
-	ErrTokenExpired       = errors.New("token 已过期")
-	ErrTokenClaimsInvalid = errors.New("token 格式错误，载荷无法解析")
-	// ErrTokenMalformed     = errors.New("token 格式非法")
+	ErrTokenExpired = errors.New("token 已过期")
+	ErrTokenInvalid = errors.New("token 无效")
 )
 
 type JWTHandler struct {
@@ -29,7 +28,7 @@ func NewJWT(secret string, issuer string) *JWTHandler {
 type Claims struct {
 	UserID   string `json:"user_id"`
 	Username string `json:"username"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 func (j *JWTHandler) GenerateToken(userID string, username string) (string, error) {
@@ -38,31 +37,33 @@ func (j *JWTHandler) GenerateToken(userID string, username string) (string, erro
 	claims := Claims{
 		UserID:   userID,
 		Username: username,
-		StandardClaims: jwt.StandardClaims{
-			IssuedAt:  issuedAt.Unix(),
-			ExpiresAt: expirationTime.Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(issuedAt),
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			Issuer:    j.issuer,
 		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(j.secret)
 	return tokenString, err
 }
 
 func (j *JWTHandler) ParseToken(tokenString string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) { return j.secret, nil })
-	if token == nil {
-		return nil, err
-	}
-	if !token.Valid {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
+		return j.secret, nil
+	})
+	if err != nil {
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			return nil, ErrTokenExpired
+		}
 		return nil, ErrTokenInvalid
 	}
-	claims, ok := token.Claims.(*Claims)
-	if !ok {
-		return nil, ErrTokenClaimsInvalid
+	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+		return claims, nil
 	}
-	if claims.ExpiresAt > 0 && claims.ExpiresAt < time.Now().Unix() {
-		return nil, ErrTokenExpired
-	}
-	return claims, nil
+
+	return nil, ErrTokenInvalid
 }
