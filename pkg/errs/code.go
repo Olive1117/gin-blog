@@ -1,4 +1,4 @@
-package response
+package errs
 
 var AppCode = map[string]int{
 	SUCCESS:                        200,

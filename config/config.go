@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/Olive1117/gin-blog/pkg/database"
 	"github.com/go-ini/ini"
 )
 
@@ -26,6 +27,18 @@ var GlobalConfig = &AllConfig{
 		Host:        "127.0.0.1:3306",
 		Name:        "bolg",
 		TablePrefix: "blog_",
+		Charset:     "utf8mb4",
+	},
+	MySQL: &database.DBConfig{
+		Host:         "127.0.0.1:3306",
+		User:         "root",
+		DBName:       "blog",
+		TablePrefix:  "blog_",
+		Charset:      "utf8mb4",
+		MaxIdleConns: 10,
+		MaxOpenConns: 100,
+		MaxLifeTime:  time.Hour,
+		LogLevel:     3,
 	},
 }
 
@@ -37,6 +50,7 @@ type AllConfig struct {
 	App    *AppConfig
 	Server *ServerConfig
 	SQL    *SQLConfig
+	MySQL  *database.DBConfig
 }
 
 type BaseConfig struct {
@@ -58,6 +72,7 @@ type SQLConfig struct {
 	Host        string `ini:"host"`
 	Name        string `ini:"name"`
 	TablePrefix string `ini:"table_prefix"`
+	Charset     string `ini:"charset"`
 }
 
 func init() {
@@ -75,6 +90,7 @@ func init() {
 	cfg.Section("app").MapTo(GlobalConfig.App)
 	cfg.Section("server").MapTo(GlobalConfig.Server)
 	cfg.Section("database").MapTo(GlobalConfig.SQL)
+	cfg.Section("database").MapTo(GlobalConfig.MySQL)
 	// 处理时间转换
 	GlobalConfig.Server.ReadTimeout *= time.Second
 	GlobalConfig.Server.WriteTimeout *= time.Second

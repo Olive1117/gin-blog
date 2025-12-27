@@ -1,12 +1,13 @@
 package router
 
 import (
+	"github.com/Olive1117/gin-blog/internal/handler"
 	"github.com/Olive1117/gin-blog/internal/middleware"
 	"github.com/Olive1117/gin-blog/pkg/jwt"
 	"github.com/gin-gonic/gin"
 )
 
-func InitRouter(router *gin.Engine, j *jwt.JWTHandler) {
+func InitRouter(router *gin.Engine, j *jwt.JWTHandler, login *handler.LoginHandler) {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 	router.GET("/test", func(ctx *gin.Context) {
@@ -26,6 +27,7 @@ func InitRouter(router *gin.Engine, j *jwt.JWTHandler) {
 				"data": "",
 			})
 		})
+		public.GET("/login", login.Login)
 	}
 	private := router.Group("/api/v1").Use(middleware.JwtAuth(j))
 	{

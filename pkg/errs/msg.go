@@ -1,4 +1,6 @@
-package response
+package errs
+
+import "errors"
 
 const (
 	SUCCESS                        = "ok"
@@ -9,8 +11,14 @@ const (
 	ERROR_NOT_EXIST_ARTICLE        = "该文章不存在"
 	ERROR_EXIST_CATEGORY           = "已存在该分类名称"
 	ERROR_NOT_EXIST_CATEGORY       = "该分类不存在"
+	ERROR_NOT_EXIST_USER           = "该用户不存在"
 	ERROR_AUTH_CHECK_TOKEN_FAIL    = "Token鉴权失败"
 	ERROR_AUTH_CHECK_TOKEN_TIMEOUT = "Token已超时"
 	ERROR_AUTH_TOKEN               = "Token生成失败"
 	ERROR_AUTH                     = "Token错误"
+)
+
+var (
+	ErrNotExistUser = errors.New("该用户不存在")
+	ErrAuthToken    = errors.New("Token生成失败")
 )

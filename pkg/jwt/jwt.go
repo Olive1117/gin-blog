@@ -26,12 +26,12 @@ func NewJWT(secret string, issuer string) *JWTHandler {
 }
 
 type Claims struct {
-	UserID   string `json:"user_id"`
+	UserID   uint   `json:"user_id"`
 	Username string `json:"username"`
 	jwt.RegisteredClaims
 }
 
-func (j *JWTHandler) GenerateToken(userID string, username string) (string, error) {
+func (j *JWTHandler) GenerateToken(userID uint, username string) (string, time.Duration, error) {
 	issuedAt := time.Now()
 	expirationTime := issuedAt.Add(3 * time.Hour)
 	claims := Claims{
@@ -45,7 +45,10 @@ func (j *JWTHandler) GenerateToken(userID string, username string) (string, erro
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(j.secret)
-	return tokenString, err
+	if err != nil {
+		return "", 0, err
+	}
+	return tokenString, time.Hour, nil
 }
 
 func (j *JWTHandler) ParseToken(tokenString string) (*Claims, error) {
