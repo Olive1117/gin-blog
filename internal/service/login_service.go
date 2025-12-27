@@ -25,11 +25,11 @@ func NewLoginService(store loginStore, jwt *jwt.JWTHandler) *loginService {
 func (l *loginService) Login(req *model.LoginRequest) (*model.LoginResponse, error) {
 	id, err := l.Repository.CheckLogin(req.Username, req.Password)
 	if err != nil {
-		return nil, errs.ErrNotExistUser
+		return nil, errs.ErrLogin
 	}
 	token, expiresIn, err := l.jwt.GenerateToken(id, req.Username)
 	if err != nil {
-		return nil, errs.ErrAuthToken
+		return nil, errs.ErrLoginToken
 	}
 	res := &model.LoginResponse{
 		AccessToken: token,

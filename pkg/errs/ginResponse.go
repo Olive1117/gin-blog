@@ -1,30 +1,36 @@
 package errs
 
 import (
+	"errors"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
-type ResponseBody struct {
-	Code int    `json:"code"`
-	Msg  string `json:"msg"`
-	Data any    `json:"data"`
-}
-
-func Result(c *gin.Context, httpCode int, msg string, data any) {
-	if data == nil {
-		data = gin.H{}
-	}
-	c.JSON(httpCode, ResponseBody{
-		Code: GetAppCode(msg),
-		Msg:  msg,
-		Data: data,
+func Success(ctx *gin.Context, data any) {
+	ctx.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "ok",
+		"data": data,
 	})
 }
 
-func Success(c *gin.Context, data any) {
-	Result(c, HttpStatus[SUCCESS], SUCCESS, data)
-}
-
-func Error(c *gin.Context, msg string, data any) {
-	Result(c, GetHttpStatus(msg), msg, data)
+// HandleError 统一处理错误返回
+func Errors(ctx *gin.Context, err error) {
+	var appErr *AppError
+	// 尝试断言是否为自定义的 AppError
+	if errors.As(err, &appErr) {
+		ctx.JSON(appErr.HttpCode, gin.H{
+			"code": appErr.Code,
+			"msg":  appErr.Message,
+			"data": nil,
+		})
+		return
+	}
+	// 如果是未知错误，返回 500
+	ctx.JSON(http.StatusInternalServerError, gin.H{
+		"code": 500,
+		"msg":  "服务器内部错误",
+		"data": nil,
+	})
 }
