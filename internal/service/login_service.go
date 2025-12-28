@@ -1,31 +1,40 @@
 package service
 
 import (
-	"github.com/Olive1117/gin-blog/model"
+	"context"
+	"errors"
+
+	"github.com/Olive1117/gin-blog/internal/model"
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/jwt"
+	"github.com/Olive1117/gin-blog/pkg/logger"
+	"gorm.io/gorm"
 )
 
-type loginStore interface {
+type LoginStore interface {
 	CheckLogin(string, string) (uint, error)
 }
 
-type loginService struct {
-	Repository loginStore
+type LoginService struct {
+	Repository LoginStore
 	jwt        *jwt.JWTHandler
 }
 
-func NewLoginService(store loginStore, jwt *jwt.JWTHandler) *loginService {
-	return &loginService{
+func NewLoginService(store LoginStore, jwt *jwt.JWTHandler) *LoginService {
+	return &LoginService{
 		Repository: store,
 		jwt:        jwt,
 	}
 }
 
-func (l *loginService) Login(req *model.LoginRequest) (*model.LoginResponse, error) {
+func (l *LoginService) Login(ctx context.Context, req *model.LoginRequest) (*model.LoginResponse, error) {
+	logger.FromContext(ctx).Info("登录业务代码")
 	id, err := l.Repository.CheckLogin(req.Username, req.Password)
 	if err != nil {
-		return nil, errs.ErrLogin
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errs.ErrLogin
+		}
+		return nil, errs.Error
 	}
 	token, expiresIn, err := l.jwt.GenerateToken(id, req.Username)
 	if err != nil {

@@ -20,6 +20,8 @@ var GlobalConfig = &AllConfig{
 		HTTPPort:     8000,
 		ReadTimeout:  60,
 		WriteTimeout: 60,
+		LogPath:      "logs/gin.log",
+		LogLevel:     "debug",
 	},
 	SQL: &SQLConfig{
 		Type:        "mysql",
@@ -64,6 +66,8 @@ type ServerConfig struct {
 	HTTPPort     int           `ini:"http_port"`
 	ReadTimeout  time.Duration `ini:"read_timeout"`
 	WriteTimeout time.Duration `ini:"write_timeout"`
+	LogPath      string        `json:"log_path"`
+	LogLevel     string        `json:"log_level"`
 }
 type SQLConfig struct {
 	Type        string `ini:"type"`

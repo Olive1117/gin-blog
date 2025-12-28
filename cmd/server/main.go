@@ -11,15 +11,12 @@ import (
 	"github.com/Olive1117/gin-blog/internal/service"
 	"github.com/Olive1117/gin-blog/pkg/database"
 	"github.com/Olive1117/gin-blog/pkg/jwt"
+	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	fmt.Println(config.GlobalConfig.App)
-	fmt.Println(config.GlobalConfig.Base)
-	fmt.Println(config.GlobalConfig.Server)
-	fmt.Println(config.GlobalConfig.SQL)
-
+	logger.NewLogger(config.GlobalConfig.Server.LogPath, config.GlobalConfig.Server.LogLevel)
 	gin.SetMode(config.GlobalConfig.Base.RunMode)
 	jwtHandler := jwt.NewJWT(config.GlobalConfig.App.JwtSecret, config.GlobalConfig.App.JwtIssuer)
 	DB, err := database.NewMySQLClient(config.GlobalConfig.MySQL)
@@ -39,5 +36,4 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 	server.ListenAndServe()
-
 }

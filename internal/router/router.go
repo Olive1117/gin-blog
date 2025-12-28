@@ -17,7 +17,7 @@ func InitRouter(router *gin.Engine, j *jwt.JWTHandler, login *handler.LoginHandl
 			"data": "",
 		})
 	})
-
+	router.Use(middleware.GinLogger())
 	public := router.Group("/api/v1")
 	{
 		public.GET("/test1", func(ctx *gin.Context) {

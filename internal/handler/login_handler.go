@@ -1,20 +1,23 @@
 package handler
 
 import (
-	"github.com/Olive1117/gin-blog/model"
+	"context"
+
+	"github.com/Olive1117/gin-blog/internal/model"
 	"github.com/Olive1117/gin-blog/pkg/errs"
+	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
 )
 
-type loginStore interface {
-	Login(*model.LoginRequest) (*model.LoginResponse, error)
+type LoginStore interface {
+	Login(context.Context, *model.LoginRequest) (*model.LoginResponse, error)
 }
 
 type LoginHandler struct {
-	Server loginStore
+	Server LoginStore
 }
 
-func NewLoginHandler(store loginStore) *LoginHandler {
+func NewLoginHandler(store LoginStore) *LoginHandler {
 	return &LoginHandler{Server: store}
 }
 
@@ -24,7 +27,8 @@ func (l *LoginHandler) Login(ctx *gin.Context) {
 		errs.Errors(ctx, errs.ErrInvalidParam)
 		return
 	}
-	res, err := l.Server.Login(&req)
+	logger.FromContext(ctx.Request.Context()).Info("登录")
+	res, err := l.Server.Login(ctx.Request.Context(), &req)
 	if err != nil {
 		errs.Errors(ctx, err)
 		return

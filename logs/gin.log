@@ -1,0 +1,4 @@
+{"level":"info","ts":"2025-12-28T19:30:27.026+0800","caller":"middleware/logger.go:31","msg":"HTTP Request","trace_id":"4619a2f7-42d6-4a17-9f31-de5096f57594","status":200,"method":"GET","path":"/api/v1/login","query":"","ip":"127.0.0.1","cost":0.0032048}
+{"level":"info","ts":"2025-12-28T19:38:28.908+0800","caller":"handler/login_handler.go:30","msg":"登录","trace_id":"eb1db9e7-1b62-4044-a5cd-37e7a076be83"}
+{"level":"info","ts":"2025-12-28T19:38:28.963+0800","caller":"service/login_service.go:31","msg":"登录业务代码","trace_id":"eb1db9e7-1b62-4044-a5cd-37e7a076be83"}
+{"level":"info","ts":"2025-12-28T19:38:28.968+0800","caller":"middleware/logger.go:31","msg":"HTTP Request","trace_id":"eb1db9e7-1b62-4044-a5cd-37e7a076be83","status":200,"method":"GET","path":"/api/v1/login","query":"","ip":"127.0.0.1","cost":0.0614525}
