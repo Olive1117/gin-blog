@@ -7,36 +7,43 @@ import (
 	"github.com/Olive1117/gin-blog/pkg/contextutil"
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/jwt"
+	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func JwtAuth(j *jwt.JWTHandler) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		authHeader := ctx.GetHeader("Authorization")
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			errs.Fail(ctx, errs.ErrLoginCheckTokenFail)
-			ctx.Abort()
+			logger.Warn(c.Request.Context(), errs.ErrLoginCheckTokenFail.Message)
+			errs.Fail(c, errs.ErrLoginCheckTokenFail)
+			c.Abort()
 			return
 		}
 		parse := strings.SplitN(authHeader, " ", 2)
 		if !(parse[0] == "Bearer" && len(parse) == 2) {
-			errs.Fail(ctx, errs.ErrLoginCheckTokenFail)
-			ctx.Abort()
+			logger.Warn(c.Request.Context(), errs.ErrLoginCheckTokenFail.Message)
+			errs.Fail(c, errs.ErrLoginCheckTokenFail)
+			c.Abort()
 			return
 		}
+		logger.Debug(c.Request.Context(), "检查token", zap.String("token", parse[1]))
 		claims, err := j.ParseToken(parse[1])
 		if err != nil {
 			if errors.Is(err, jwt.ErrTokenExpired) {
-				errs.Fail(ctx, errs.ErrLoginCheckTokenTimeout)
+				logger.Warn(c.Request.Context(), errs.ErrLoginCheckTokenTimeout.Message, zap.Error(err))
+				errs.Fail(c, errs.ErrLoginCheckTokenTimeout)
 			} else {
-				errs.Fail(ctx, errs.ErrLoginCheckTokenFail)
+				logger.Warn(c.Request.Context(), errs.ErrLoginCheckTokenFail.Message, zap.Error(err))
+				errs.Fail(c, errs.ErrLoginCheckTokenFail)
 			}
-			ctx.Abort()
+			c.Abort()
 			return
 		}
-		newctx := contextutil.SetCurrentUser(ctx, claims.UserID)
-		ctx.Request = ctx.Request.WithContext(newctx)
-		ctx.Set("current_user", claims.UserID)
-		ctx.Next()
+		newctx := contextutil.SetCurrentUser(c.Request.Context(), claims.UserID)
+		c.Request = c.Request.WithContext(newctx)
+		c.Set("current_user", claims.UserID)
+		c.Next()
 	}
 }

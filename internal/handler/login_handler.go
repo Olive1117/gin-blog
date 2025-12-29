@@ -22,20 +22,20 @@ func NewLoginHandler(store LoginStore) *LoginHandler {
 	return &LoginHandler{Server: store}
 }
 
-func (l *LoginHandler) Login(gc *gin.Context) {
-	c := gc.Request.Context()
-	logger.FromContext(c).Debug("登录")
+func (l *LoginHandler) Login(c *gin.Context) {
+	ctx := c.Request.Context()
+	logger.Debug(ctx, "登录")
 	var req model.LoginRequest
-	if err := gc.ShouldBindJSON(&req); err != nil {
-		logger.FromContext(c).Warn(errs.ErrInvalidParam.Message, zap.Any("err", err))
-		errs.Fail(gc, errs.ErrInvalidParam)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Warn(ctx, errs.ErrInvalidParam.Message, zap.Error(err))
+		errs.Fail(c, errs.ErrInvalidParam)
 		return
 	}
-	res, err := l.Server.Login(c, &req)
+	res, err := l.Server.Login(ctx, &req)
 	if err != nil {
-		logger.FromContext(c).Warn("[Business Warning]", zap.Any("err", err))
-		errs.Fail(gc, err)
+		logger.Warn(ctx, "[Business Warning]", zap.Error(err))
+		errs.Fail(c, err)
 		return
 	}
-	errs.Success(gc, res)
+	errs.Success(c, res)
 }

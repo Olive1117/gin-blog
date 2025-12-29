@@ -1,7 +1,7 @@
 -- create database blog;
 -- use blog;
 -- source create.sql;
-DROP TABLE IF EXISTS blog_tag, blog_category, blog_article, blog_login, blog_article_tag;
+DROP TABLE IF EXISTS blog_tag, blog_category, blog_article, blog_user, blog_article_tag;
 
 CREATE TABLE `blog_tag` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -69,7 +69,7 @@ CREATE TABLE `blog_article_tag` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文章分类管理';
 
-CREATE TABLE `blog_login` (
+CREATE TABLE `blog_user` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` datetime(3) DEFAULT NULL,
   `updated_at` datetime(3) DEFAULT NULL,
@@ -84,4 +84,4 @@ CREATE TABLE `blog_login` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO `blog`.`blog_login` (`id`, `username`, `password`) VALUES (null, 'admin', '123456');
+INSERT INTO `blog`.`blog_user` (`id`, `username`, `password`) VALUES (null, 'admin', '123456');

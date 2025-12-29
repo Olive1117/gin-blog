@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-var Log *zap.Logger
+var L *zap.Logger
 
 const TraceIDKey = "trace_id"
 
@@ -33,7 +33,8 @@ func NewLogger(logPath string, level string) {
 		zapcore.NewCore(JSONEncoder, writer, getLevel(level)),
 		zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), getLevel(level)),
 	)
-	Log = zap.New(core, zap.AddCaller())
+	L = zap.New(core, zap.AddCaller())
+	zap.RedirectStdLog(L)
 }
 
 func getLevel(level string) zapcore.Level {
@@ -57,14 +58,35 @@ func getLevel(level string) zapcore.Level {
 	}
 }
 
-// FromContext 从 ctx 中提取 trace_id 并返回一个带字段的 zap.Logger
-func FromContext(ctx context.Context) *zap.Logger {
-	if ctx == nil {
-		return Log
+// FromContext 从 c 中提取 trace_id 并返回一个带字段的 zap.Logger
+func fromContext(c context.Context) *zap.Logger {
+	if c == nil {
+		return L
 	}
-	traceID := contextutil.GetTraceID(ctx)
+	// 先从context获取*zap.logger实例，没有才进行创建逻辑
+	logger := contextutil.GetContextLoggerKey(c)
+	if logger != nil {
+		return logger
+	}
+	traceID := contextutil.GetTraceID(c)
 	if traceID != "" {
-		return Log.With(zap.String(TraceIDKey, traceID))
+		return L.With(zap.String(TraceIDKey, traceID))
 	}
-	return Log
+	return L
+}
+
+func Debug(ctx context.Context, msg string, fields ...zap.Field) {
+	fromContext(ctx).Debug(msg, fields...)
+}
+
+func Info(ctx context.Context, msg string, fields ...zap.Field) {
+	fromContext(ctx).Info(msg, fields...)
+}
+
+func Error(ctx context.Context, msg string, fields ...zap.Field) {
+	fromContext(ctx).Error(msg, fields...)
+}
+
+func Warn(ctx context.Context, msg string, fields ...zap.Field) {
+	fromContext(ctx).Warn(msg, fields...)
 }

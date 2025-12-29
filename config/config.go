@@ -2,11 +2,12 @@ package config
 
 import (
 	"embed"
-	"log"
 	"time"
 
 	"github.com/Olive1117/gin-blog/pkg/database"
+	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/go-ini/ini"
+	"go.uber.org/zap"
 )
 
 var GlobalConfig = &AllConfig{
@@ -83,11 +84,11 @@ func init() {
 	//TODO 移除硬编码文件名
 	data, err := ConfigFS.ReadFile("app.ini")
 	if err != nil {
-		log.Fatalf("没有找到app.ini配置文件")
+		logger.L.Error("没有找到app.ini配置文件", zap.Error(err))
 	}
 	cfg, err := ini.Load(data)
 	if err != nil {
-		log.Fatalf("app.ini读取错误")
+		logger.L.Error("app.ini读取错误", zap.Error(err))
 	}
 	// 映射配置
 	cfg.Section("").MapTo(GlobalConfig.Base)

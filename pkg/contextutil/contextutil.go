@@ -2,39 +2,53 @@ package contextutil
 
 import (
 	"context"
+
+	"go.uber.org/zap"
 )
 
 type contextKey string
 
 const (
-	traceIDKey     contextKey = "trace_id"
-	currentUserKey contextKey = "current_user"
+	traceIDKey       contextKey = "trace_id"
+	currentUserIDKey contextKey = "current_user"
+	contextLoggerKey contextKey = "context_logger"
 )
 
-func SetTraceID(ctx context.Context, traceID string) context.Context {
-	return context.WithValue(ctx, traceIDKey, traceID)
+func SetTraceID(c context.Context, traceID string) context.Context {
+	return context.WithValue(c, traceIDKey, traceID)
 }
-
-func GetTraceID(ctx context.Context) string {
-	if ctx == nil {
+func GetTraceID(c context.Context) string {
+	if c == nil {
 		return ""
 	}
-	if traceID, ok := ctx.Value(traceIDKey).(string); ok {
+	if traceID, ok := c.Value(traceIDKey).(string); ok {
 		return traceID
 	}
 	return ""
 }
 
-func SetCurrentUser(ctx context.Context, userID uint) context.Context {
-	return context.WithValue(ctx, currentUserKey, userID)
+func SetCurrentUser(c context.Context, userID uint) context.Context {
+	return context.WithValue(c, currentUserIDKey, userID)
 }
-
-func GetCurrentUser(ctx context.Context) uint {
-	if ctx == nil {
+func GetCurrentUser(c context.Context) uint {
+	if c == nil {
 		return 0
 	}
-	if id, ok := ctx.Value(currentUserKey).(uint); ok {
+	if id, ok := c.Value(currentUserIDKey).(uint); ok {
 		return id
 	}
 	return 0
+}
+
+func SetContextLoggerKey(c context.Context, logger *zap.Logger) context.Context {
+	return context.WithValue(c, contextLoggerKey, logger)
+}
+func GetContextLoggerKey(c context.Context) *zap.Logger {
+	if c == nil {
+		return nil
+	}
+	if logger, ok := c.Value(contextLoggerKey).(*zap.Logger); ok {
+		return logger
+	}
+	return nil
 }

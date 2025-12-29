@@ -13,6 +13,7 @@ import (
 	"github.com/Olive1117/gin-blog/pkg/jwt"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -21,6 +22,7 @@ func main() {
 	jwtHandler := jwt.NewJWT(config.GlobalConfig.App.JwtSecret, config.GlobalConfig.App.JwtIssuer)
 	DB, err := database.NewMySQLClient(config.GlobalConfig.MySQL)
 	if err != nil {
+		logger.L.Error("MySQL初始化失败", zap.Error(err))
 		return
 	}
 	loginRepo := repository.NewLoginRepo(DB)

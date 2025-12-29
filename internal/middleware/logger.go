@@ -17,31 +17,38 @@ import (
 )
 
 func GinLogger() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		traceID := ctx.GetHeader("X-Trace-ID")
+	return func(c *gin.Context) {
+		// 获取请求跟踪id，没有请求ai则uuid生成
+		traceID := c.GetHeader("X-Trace-ID")
 		if traceID == "" {
 			uuid, err := random.UUIdV4()
 			if err != nil {
-				logger.Log.Warn("Trace生成错误")
+				logger.L.Warn("Trace生成错误")
 			} else {
 				traceID = uuid
 			}
 		}
-		newctx := contextutil.SetTraceID(ctx, traceID)
-		ctx.Request = ctx.Request.WithContext(newctx)
+		// 注入traceID供logger或其他使用
+		newctx := contextutil.SetTraceID(c.Request.Context(), traceID)
+		// 生成每个请求唯一*zap.logger，防止重复生成多个*zap.logger子实例
+		newctx = contextutil.SetContextLoggerKey(newctx, logger.L.With(zap.String("trace_id", traceID)))
+		c.Request = c.Request.WithContext(newctx)
+
 		start := time.Now()
-		path := ctx.Request.URL.Path
-		query := ctx.Request.URL.RawQuery
-		ctx.Next()
+		path := c.Request.URL.Path
+		query := c.Request.URL.RawQuery
+
+		c.Next()
+
 		cost := time.Since(start)
-		logger.FromContext(ctx.Request.Context()).Info("HTTP Request",
-			zap.Int("status", ctx.Writer.Status()),
-			zap.String("method", ctx.Request.Method),
+		logger.Info(c.Request.Context(), "HTTP Request",
+			zap.Int("status", c.Writer.Status()),
+			zap.String("method", c.Request.Method),
 			zap.String("path", path),
 			zap.String("query", query),
-			zap.String("ip", ctx.ClientIP()),
-			zap.String("user-agent", ctx.Request.UserAgent()),
-			zap.String("errors", ctx.Errors.ByType(gin.ErrorTypePrivate).String()),
+			zap.String("ip", c.ClientIP()),
+			zap.String("user-agent", c.Request.UserAgent()),
+			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
 			zap.Duration("cost", cost),
 		)
 	}
@@ -67,7 +74,7 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 				// DumpRequest 以 HTTP/1.x 连线形式返回给定的请求
 				httpRequest, _ := httputil.DumpRequest(c.Request, false)
 				if brokenPipe {
-					logger.Log.Error(c.Request.URL.Path,
+					logger.L.Error(c.Request.URL.Path,
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 					)
@@ -78,13 +85,13 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 				}
 
 				if stack {
-					logger.Log.Error("[Recovery from panic]",
+					logger.L.Error("[Recovery from panic]",
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 						zap.String("stack", string(debug.Stack())), // 返回调用它的goroutine的格式化堆栈跟踪。
 					)
 				} else {
-					logger.Log.Error("[Recovery from panic]",
+					logger.L.Error("[Recovery from panic]",
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 					)

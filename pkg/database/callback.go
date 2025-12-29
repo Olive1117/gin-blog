@@ -21,7 +21,7 @@ func (op *AuditPlugin) Initialize(db *gorm.DB) error {
 	// 注册删除钩子（针对软删除）
 	err = db.Callback().Delete().Before("gorm:delete").Register("audit:before_delete", op.beforeDelete)
 	if err != nil {
-		logger.Log.Error("grom callback", zap.Error(err))
+		logger.L.Error("grom callback", zap.Error(err))
 		return err
 	}
 	return nil
