@@ -52,6 +52,7 @@ func NewMySQLClient(cfg *DBConfig) (*gorm.DB, error) {
 	if err := sqlDB.Ping(); err != nil {
 		return nil, fmt.Errorf("database ping failed: %w", err)
 	}
+	db.Use(&AuditPlugin{})
 	return db, nil
 }
 func CloseDB(db *gorm.DB) {

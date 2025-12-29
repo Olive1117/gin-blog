@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"context"
+
 	"github.com/Olive1117/gin-blog/internal/model"
 	"github.com/Olive1117/gin-blog/internal/service"
 	"gorm.io/gorm"
@@ -18,9 +20,9 @@ func NewLoginRepo(db *gorm.DB) *LoginRepo {
 	}
 }
 
-func (l *LoginRepo) CheckLogin(username string, password string) (uint, error) {
+func (l *LoginRepo) CheckLogin(c context.Context, username string, password string) (uint, error) {
 	var login model.Login
-	err := l.db.Select("id").Where(&model.Login{Username: username, Password: password}).First(&login).Error
+	err := l.db.WithContext(c).Select("id").Where(&model.Login{Username: username, Password: password}).First(&login).Error
 	if login.ID > 0 {
 		return login.ID, err
 	} else {

@@ -16,7 +16,7 @@ func Success(ctx *gin.Context, data any) {
 }
 
 // HandleError 统一处理错误返回
-func Errors(ctx *gin.Context, err error) {
+func Fail(ctx *gin.Context, err error) {
 	var appErr *AppError
 	// 尝试断言是否为自定义的 AppError
 	if errors.As(err, &appErr) {

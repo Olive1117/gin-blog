@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/Olive1117/gin-blog/internal/handler"
 	"github.com/Olive1117/gin-blog/internal/model"
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/jwt"
@@ -11,8 +12,10 @@ import (
 	"gorm.io/gorm"
 )
 
+var _ handler.LoginStore = (*LoginService)(nil)
+
 type LoginStore interface {
-	CheckLogin(string, string) (uint, error)
+	CheckLogin(context.Context, string, string) (uint, error)
 }
 
 type LoginService struct {
@@ -27,9 +30,9 @@ func NewLoginService(store LoginStore, jwt *jwt.JWTHandler) *LoginService {
 	}
 }
 
-func (l *LoginService) Login(ctx context.Context, req *model.LoginRequest) (*model.LoginResponse, error) {
-	logger.FromContext(ctx).Info("登录业务代码")
-	id, err := l.Repository.CheckLogin(req.Username, req.Password)
+func (l *LoginService) Login(c context.Context, req *model.LoginRequest) (*model.LoginResponse, error) {
+	logger.FromContext(c).Debug("登录业务代码")
+	id, err := l.Repository.CheckLogin(c, req.Username, req.Password)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errs.ErrLogin

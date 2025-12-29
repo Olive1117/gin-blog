@@ -9,13 +9,16 @@ import (
 
 func InitRouter(router *gin.Engine, j *jwt.JWTHandler, login *handler.LoginHandler) {
 	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
+	router.Use(middleware.GinRecovery(false))
 	router.GET("/test", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{
 			"code": 200,
 			"msg":  "hello gin!",
 			"data": "",
 		})
+	})
+	router.GET("/panic", func(c *gin.Context) {
+		panic("测试：这是一个模拟的崩溃")
 	})
 	router.Use(middleware.GinLogger())
 	public := router.Group("/api/v1")
