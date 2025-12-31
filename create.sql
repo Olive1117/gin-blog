@@ -52,21 +52,12 @@ CREATE TABLE `blog_article` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文章管理';
 
 CREATE TABLE `blog_article_tag` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `created_at` datetime(3) DEFAULT NULL,
-  `updated_at` datetime(3) DEFAULT NULL,
-  `deleted_at` datetime(3) DEFAULT NULL,
-  `created_by` bigint(20) unsigned DEFAULT '0' COMMENT '创建者ID',
-  `updated_by` bigint(20) unsigned DEFAULT '0' COMMENT '修改者ID',
-  `deleted_by` bigint(20) unsigned DEFAULT '0' COMMENT '删除者ID',
-
   `article_id` bigint(20) unsigned DEFAULT '0' COMMENT '文章ID',
   `tag_id` bigint(20) unsigned DEFAULT '0' COMMENT '标签ID',
   CONSTRAINT `fk_article` FOREIGN KEY (`article_id`) REFERENCES `blog_article`(`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_tag` FOREIGN KEY (`tag_id`) REFERENCES `blog_tag`(`id`) ON DELETE CASCADE,
   UNIQUE KEY `uk_article_tag` (`article_id`, `tag_id`),
-  INDEX idx_blog_article_tab_deleted_at (deleted_at),
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`article_id`, `tag_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文章分类管理';
 
 CREATE TABLE `blog_user` (

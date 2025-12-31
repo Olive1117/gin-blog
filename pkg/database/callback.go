@@ -30,17 +30,29 @@ func (op *AuditPlugin) Initialize(db *gorm.DB) error {
 func (op *AuditPlugin) beforeCreate(db *gorm.DB) {
 	uid := contextutil.GetCurrentUser(db.Statement.Context)
 	// 设置 CreatedBy 和 UpdatedBy
-	db.Statement.SetColumn("CreatedBy", uid)
-	db.Statement.SetColumn("UpdatedBy", uid)
+	if field := db.Statement.Schema.LookUpField("CreatedBy"); field != nil {
+		db.Statement.SetColumn("CreatedBy", uid)
+	}
+	if field := db.Statement.Schema.LookUpField("UpdatedBy"); field != nil {
+		db.Statement.SetColumn("UpdatedBy", uid)
+	}
+	// db.Statement.SetColumn("CreatedBy", uid)
+	// db.Statement.SetColumn("UpdatedBy", uid)
 }
 
 func (op *AuditPlugin) beforeUpdate(db *gorm.DB) {
 	uid := contextutil.GetCurrentUser(db.Statement.Context)
-	db.Statement.SetColumn("UpdatedBy", uid)
+	if field := db.Statement.Schema.LookUpField("UpdatedBy"); field != nil {
+		db.Statement.SetColumn("UpdatedBy", uid)
+	}
+	// db.Statement.SetColumn("UpdatedBy", uid)
 }
 
 func (op *AuditPlugin) beforeDelete(db *gorm.DB) {
 	uid := contextutil.GetCurrentUser(db.Statement.Context)
 	// 逻辑删除本质是更新，手动设置字段
-	db.Statement.SetColumn("DeletedBy", uid)
+	if field := db.Statement.Schema.LookUpField("DeletedBy"); field != nil {
+		db.Statement.SetColumn("DeletedBy", uid)
+	}
+	// db.Statement.SetColumn("DeletedBy", uid)
 }

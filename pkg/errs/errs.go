@@ -37,4 +37,5 @@ var (
 	ErrExistCategory          = New(http.StatusBadRequest, 30002, "分类已存在")
 	ErrNotExistTag            = New(http.StatusNotFound, 40001, "标签不存在")
 	ErrExistTag               = New(http.StatusBadRequest, 40002, "标签已存在")
+	ErrNotFound               = New(http.StatusNotFound, 404, "未找到")
 )

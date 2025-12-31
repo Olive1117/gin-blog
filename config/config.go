@@ -41,7 +41,7 @@ var GlobalConfig = &AllConfig{
 		MaxIdleConns: 10,
 		MaxOpenConns: 100,
 		MaxLifeTime:  time.Hour,
-		LogLevel:     3,
+		LogLevel:     4,
 	},
 }
 

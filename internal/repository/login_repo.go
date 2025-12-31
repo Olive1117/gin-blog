@@ -2,13 +2,12 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Olive1117/gin-blog/internal/model"
-	"github.com/Olive1117/gin-blog/internal/service"
+	"github.com/Olive1117/gin-blog/pkg/errs"
 	"gorm.io/gorm"
 )
-
-var _ service.LoginStore = (*LoginRepo)(nil)
 
 type LoginRepo struct {
 	db *gorm.DB
@@ -24,8 +23,11 @@ func (l *LoginRepo) CheckLogin(c context.Context, username string, password stri
 	var login model.User
 	err := l.db.WithContext(c).Select("id").Where(&model.User{Username: username, Password: password}).First(&login).Error
 	if login.ID > 0 {
-		return login.ID, err
+		return login.ID, nil
 	} else {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return 0, errs.ErrLogin
+		}
 		return 0, err
 	}
 }

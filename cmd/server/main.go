@@ -25,11 +25,11 @@ func main() {
 		logger.L.Error("MySQL初始化失败", zap.Error(err))
 		return
 	}
-	loginRepo := repository.NewLoginRepo(DB)
-	loginService := service.NewLoginService(loginRepo, jwtHandler)
-	loginHandler := handler.NewLoginHandler(loginService)
+	gormTransaction := database.NewgormTransaction(DB)
+	loginHandler := handler.NewLoginHandler(service.NewLoginService(repository.NewLoginRepo(DB), jwtHandler))
+	articleHandler := handler.NewArticleHandler(service.NewArticleService(repository.NewArticleRepo(DB), gormTransaction))
 	r := gin.New()
-	router.InitRouter(r, jwtHandler, loginHandler)
+	router.InitRouter(r, jwtHandler, loginHandler, articleHandler)
 	server := &http.Server{
 		Addr:           fmt.Sprintf(":%d", config.GlobalConfig.Server.HTTPPort),
 		Handler:        r,

@@ -16,26 +16,26 @@ func JwtAuth(j *jwt.JWTHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			logger.Warn(c.Request.Context(), errs.ErrLoginCheckTokenFail.Message)
+			logger.FromContext(c.Request.Context()).Warn(errs.ErrLoginCheckTokenFail.Message)
 			errs.Fail(c, errs.ErrLoginCheckTokenFail)
 			c.Abort()
 			return
 		}
 		parse := strings.SplitN(authHeader, " ", 2)
 		if !(parse[0] == "Bearer" && len(parse) == 2) {
-			logger.Warn(c.Request.Context(), errs.ErrLoginCheckTokenFail.Message)
+			logger.FromContext(c.Request.Context()).Warn(errs.ErrLoginCheckTokenFail.Message)
 			errs.Fail(c, errs.ErrLoginCheckTokenFail)
 			c.Abort()
 			return
 		}
-		logger.Debug(c.Request.Context(), "检查token", zap.String("token", parse[1]))
+		logger.FromContext(c.Request.Context()).Debug("检查token", zap.String("token", parse[1]))
 		claims, err := j.ParseToken(parse[1])
 		if err != nil {
 			if errors.Is(err, jwt.ErrTokenExpired) {
-				logger.Warn(c.Request.Context(), errs.ErrLoginCheckTokenTimeout.Message, zap.Error(err))
+				logger.FromContext(c.Request.Context()).Warn(errs.ErrLoginCheckTokenTimeout.Message, zap.Error(err))
 				errs.Fail(c, errs.ErrLoginCheckTokenTimeout)
 			} else {
-				logger.Warn(c.Request.Context(), errs.ErrLoginCheckTokenFail.Message, zap.Error(err))
+				logger.FromContext(c.Request.Context()).Warn(errs.ErrLoginCheckTokenFail.Message, zap.Error(err))
 				errs.Fail(c, errs.ErrLoginCheckTokenFail)
 			}
 			c.Abort()

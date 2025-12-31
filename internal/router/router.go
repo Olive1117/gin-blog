@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitRouter(router *gin.Engine, j *jwt.JWTHandler, login *handler.LoginHandler) {
+func InitRouter(router *gin.Engine, j *jwt.JWTHandler, login *handler.LoginHandler, article *handler.ArticleHandler) {
 	router.Use(gin.Logger())
 	router.Use(middleware.GinRecovery(false))
 	router.GET("/test", func(ctx *gin.Context) {
@@ -31,6 +31,8 @@ func InitRouter(router *gin.Engine, j *jwt.JWTHandler, login *handler.LoginHandl
 			})
 		})
 		public.GET("/login", login.Login)
+		public.GET("/article/:id", article.Get)
+		public.POST("/article", article.Create)
 	}
 	private := router.Group("/api/v1").Use(middleware.JwtAuth(j))
 	{

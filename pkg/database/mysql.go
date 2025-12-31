@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -60,4 +61,21 @@ func CloseDB(db *gorm.DB) {
 	if err == nil {
 		defer sqlDB.Close()
 	}
+}
+
+type GormTransaction struct {
+	db *gorm.DB
+}
+
+func NewgormTransaction(db *gorm.DB) *GormTransaction {
+	return &GormTransaction{
+		db: db,
+	}
+}
+
+func (g *GormTransaction) Transaction(c context.Context, fn func(c context.Context) error) error {
+	return g.db.WithContext(c).Transaction(func(tx *gorm.DB) error {
+		newc := context.WithValue(c, "tx", tx)
+		return fn(newc)
+	})
 }

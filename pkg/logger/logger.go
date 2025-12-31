@@ -59,7 +59,7 @@ func getLevel(level string) zapcore.Level {
 }
 
 // FromContext 从 c 中提取 trace_id 并返回一个带字段的 zap.Logger
-func fromContext(c context.Context) *zap.Logger {
+func FromContext(c context.Context) *zap.Logger {
 	if c == nil {
 		return L
 	}
@@ -75,18 +75,18 @@ func fromContext(c context.Context) *zap.Logger {
 	return L
 }
 
-func Debug(ctx context.Context, msg string, fields ...zap.Field) {
-	fromContext(ctx).Debug(msg, fields...)
-}
+// func Debug(ctx context.Context, msg string, fields ...zap.Field) {
+// 	FromContext(ctx).Debug(msg, fields...)
+// }
 
-func Info(ctx context.Context, msg string, fields ...zap.Field) {
-	fromContext(ctx).Info(msg, fields...)
-}
+// func Info(ctx context.Context, msg string, fields ...zap.Field) {
+// 	FromContext(ctx).Info(msg, fields...)
+// }
 
-func Error(ctx context.Context, msg string, fields ...zap.Field) {
-	fromContext(ctx).Error(msg, fields...)
-}
+// func Error(ctx context.Context, msg string, fields ...zap.Field) {
+// 	FromContext(ctx).Error(msg, fields...)
+// }
 
-func Warn(ctx context.Context, msg string, fields ...zap.Field) {
-	fromContext(ctx).Warn(msg, fields...)
-}
+// func Warn(ctx context.Context, msg string, fields ...zap.Field) {
+// 	FromContext(ctx).Warn(msg, fields...)
+// }

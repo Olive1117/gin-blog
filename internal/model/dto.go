@@ -16,3 +16,14 @@ type LoginResponse struct {
 	ExpiresIn   int64  `json:"expires_in"` // 过期时间戳
 	TokenType   string `json:"token_type"` // 默认 "Bearer"
 }
+
+type ArticleDTO struct {
+	Title   string `json:"title"`
+	Desc    string `json:"desc"`
+	Content string `json:"content"`
+	State   *int8  `json:"state"`
+
+	Category string `json:"category"`
+
+	Tags []string `json:"tags"`
+}
