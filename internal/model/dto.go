@@ -25,14 +25,25 @@ type ArticleDTO struct {
 	Content string `json:"content"`
 	State   *int8  `json:"state"`
 
-	Category string `json:"category"`
+	CategoryName string `json:"category"`
 
-	Tags []string `json:"tags"`
+	TagNames []string `json:"tags"`
+}
+
+func (dto *ArticleDTO) Category(category Category) {
+	dto.CategoryName = category.Name
+}
+func (dto *ArticleDTO) Tags(tags []Tag) {
+	tagNames := make([]string, len(tags))
+	for i, tag := range tags {
+		tagNames[i] = tag.Name
+	}
+	dto.TagNames = tagNames
 }
 
 type ArticleQuery struct {
-	Title    string   `form:"title"`
-	Category string   `form:"category"`
-	Tags     []string `form:"tag"`
-	State    *int8    `form:"state"`
+	Title        string   `form:"title"`
+	CategoryName string   `form:"category"`
+	TagNames     []string `form:"tag"`
+	State        *int8    `form:"state"`
 }

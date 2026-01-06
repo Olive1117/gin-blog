@@ -68,12 +68,9 @@ func (b *BaseRepo[T]) Create(c context.Context, entity *T) error {
 
 func (b *BaseRepo[T]) Delete(c context.Context, id uint) (int, error) {
 	return gorm.G[T](b.Conn(c)).Where("id = ?", id).Delete(c)
-	// var entity T
-	// return -1, b.Conn(c).Where("id = ?", id).Delete(&entity).Error
 }
 
 func (b *BaseRepo[T]) Update(c context.Context, id uint, data any) error {
-	logger.FromContext(c).Debug("更新数据", zap.Uint("id", id), zap.Any("data", data))
 	return b.Conn(c).Where("id = ?", id).Updates(data).Error
 }
 

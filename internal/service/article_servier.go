@@ -22,57 +22,44 @@ func NewArticleService(repo *repository.ArticleRepo, ts *database.GormTransactio
 	}
 }
 
-func (a *ArticleService) Update(c context.Context, id uint, art model.ArticleDTO) error {
+func (a *ArticleService) Update(c context.Context, article *model.Article) error {
 	return a.Ts.Transaction(c, func(c context.Context) error {
-		category, err := a.Repo.SyncCategory(c, art.Category)
+		category, err := a.Repo.SyncCategory(c, article.Category.Name)
 		if err != nil {
 			return err
 		}
-		tags, err := a.Repo.SyncTags(c, art.Tags)
+		tagsName := make([]string, len(article.Tags))
+		for i, tag := range article.Tags {
+			tagsName[i] = tag.Name
+		}
+		tags, err := a.Repo.SyncTags(c, tagsName)
 		if err != nil {
 			return err
 		}
-		article := &model.Article{
-			Title:      art.Title,
-			Desc:       art.Desc,
-			Content:    art.Content,
-			State:      art.State,
-			CategoryID: category.ID,
-			Tags:       tags,
-		}
-		article.ID = id
-		logger.FromContext(c).Debug("更新文章业务", zap.Uint("id", id), zap.Any("文章", article))
-		return a.Repo.Update(c, id, article)
+		article.CategoryID = category.ID
+		article.Category = *category
+		article.Tags = tags
+		logger.FromContext(c).Debug("更新文章业务", zap.Any("文章", article))
+		return a.Repo.UpdateArticle(c, article)
 	})
 }
 
-// func (a *ArticleService) Remove(c context.Context, id uint) (int, error) {
-// 	rowsAffected, err := a.Repo.Delete(c, id)
-// 	return rowsAffected, err
-// }
-
-// func (a *ArticleService) GetUserByID(c context.Context, id uint) (*model.Article, error) {
-// 	article, err := a.Repo.FindById(c, id, "Category", "Tags")
-// 	logger.FromContext(c).Debug("获取文章业务完成", zap.Uint("id", id), zap.Any("文章", article), zap.Error(err))
-// 	// logger.FromContext(c).Debug("从数据库取出文章", zap.Any("文章", article))
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return &article, nil
-// }
-
-func (a *ArticleService) Create(c context.Context, article *model.ArticleDTO) error {
+func (a *ArticleService) Create(c context.Context, article *model.Article) error {
 	logger.FromContext(c).Debug("创建文章业务")
 	return a.Ts.Transaction(c, func(c context.Context) error {
 		// 1. 同步分类
 		logger.FromContext(c).Debug("同步分类")
-		category, err := a.Repo.SyncCategory(c, article.Category)
+		category, err := a.Repo.SyncCategory(c, article.Category.Name)
 		if err != nil {
 			return err
 		}
 		// 2. 同步标签
 		logger.FromContext(c).Debug("同步标签")
-		tags, err := a.Repo.SyncTags(c, article.Tags)
+		tagsName := make([]string, len(article.Tags))
+		for i, tag := range article.Tags {
+			tagsName[i] = tag.Name
+		}
+		tags, err := a.Repo.SyncTags(c, tagsName)
 		if err != nil {
 			return err
 		}
@@ -88,4 +75,17 @@ func (a *ArticleService) Create(c context.Context, article *model.ArticleDTO) er
 		// 4. 调用 BaseRepo 提供的 Create 方法
 		return a.Repo.CreateArticle(c, article)
 	})
+}
+
+func (a *ArticleService) Get(c context.Context, id uint) (model.Article, error) {
+	return a.Repo.FindById(c, id, "Category", "Tags")
+}
+
+func (a *ArticleService) Delete(c context.Context, id uint) (int, error) {
+	// 可以在这里增加删除后的逻辑（如清理 Redis）
+	return a.Repo.Delete(c, id)
+}
+
+func (a *ArticleService) List(c context.Context, page, pageSize int, filter *model.Article) ([]model.Article, error) {
+	return a.Repo.FindAllArticle(c, page, pageSize, filter)
 }

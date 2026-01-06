@@ -32,6 +32,17 @@ type Article struct {
 	Tags []Tag `json:"tags" gorm:"many2many:article_tag;"`
 }
 
+func (a *Article) CategoryName(categoryName string) {
+	a.Category = Category{Name: categoryName}
+}
+func (a *Article) TagNames(tagNames []string) {
+	tags := make([]Tag, len(tagNames))
+	for i, name := range tagNames {
+		tags[i].Name = name
+	}
+	a.Tags = tags
+}
+
 type Category struct {
 	BaseModel
 	Name  string `json:"name" gorm:"size:50;uniqueIndex;not null"`
