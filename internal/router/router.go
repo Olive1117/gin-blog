@@ -30,9 +30,7 @@ func InitRouter(router *gin.Engine, j *jwt.JWTHandler, login *handler.LoginHandl
 				"data": "",
 			})
 		})
-		public.GET("/login", login.Login)
-		public.GET("/article/:id", article.Get)
-		public.POST("/article", article.Create)
+		public.POST("/login", login.Login)
 	}
 	private := router.Group("/api/v1").Use(middleware.JwtAuth(j))
 	{
@@ -43,6 +41,10 @@ func InitRouter(router *gin.Engine, j *jwt.JWTHandler, login *handler.LoginHandl
 				"data": "",
 			})
 		})
+		private.GET("/article/:id", article.Get)
+		private.POST("/article", article.Create)
+		private.DELETE("/article/:id", article.Delete)
+		private.PUT("/article/:id", article.Update)
 	}
 
 }

@@ -1,6 +1,8 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type BaseModel struct {
 	gorm.Model
@@ -12,6 +14,7 @@ type BaseModel struct {
 
 type User struct {
 	BaseModel
+	// Account
 	Username string `json:"username" gorm:"size:50;uniqueIndex;not null"`
 	Password string `json:"-"`
 }

@@ -41,6 +41,7 @@ func JwtAuth(j *jwt.JWTHandler) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+		logger.FromContext(c.Request.Context()).Debug("注入当前用户id到上下文", zap.Uint("ID", claims.UserID))
 		newctx := contextutil.SetCurrentUser(c.Request.Context(), claims.UserID)
 		c.Request = c.Request.WithContext(newctx)
 		c.Set("current_user", claims.UserID)

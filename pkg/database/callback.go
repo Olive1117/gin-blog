@@ -29,6 +29,7 @@ func (op *AuditPlugin) Initialize(db *gorm.DB) error {
 
 func (op *AuditPlugin) beforeCreate(db *gorm.DB) {
 	uid := contextutil.GetCurrentUser(db.Statement.Context)
+	logger.L.Debug("执行创建插件", zap.Uint("当前用户", uid))
 	// 设置 CreatedBy 和 UpdatedBy
 	if field := db.Statement.Schema.LookUpField("CreatedBy"); field != nil {
 		db.Statement.SetColumn("CreatedBy", uid)
@@ -36,23 +37,22 @@ func (op *AuditPlugin) beforeCreate(db *gorm.DB) {
 	if field := db.Statement.Schema.LookUpField("UpdatedBy"); field != nil {
 		db.Statement.SetColumn("UpdatedBy", uid)
 	}
-	// db.Statement.SetColumn("CreatedBy", uid)
-	// db.Statement.SetColumn("UpdatedBy", uid)
 }
 
 func (op *AuditPlugin) beforeUpdate(db *gorm.DB) {
+	logger.L.Debug("执行更新插件")
 	uid := contextutil.GetCurrentUser(db.Statement.Context)
 	if field := db.Statement.Schema.LookUpField("UpdatedBy"); field != nil {
 		db.Statement.SetColumn("UpdatedBy", uid)
 	}
-	// db.Statement.SetColumn("UpdatedBy", uid)
 }
 
 func (op *AuditPlugin) beforeDelete(db *gorm.DB) {
 	uid := contextutil.GetCurrentUser(db.Statement.Context)
+	logger.L.Debug("执行删除插件", zap.Uint("id", uid))
 	// 逻辑删除本质是更新，手动设置字段
 	if field := db.Statement.Schema.LookUpField("DeletedBy"); field != nil {
+		logger.L.Debug("删除！")
 		db.Statement.SetColumn("DeletedBy", uid)
 	}
-	// db.Statement.SetColumn("DeletedBy", uid)
 }

@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 // LoginRequest 登录请求
 type LoginRequest struct {
 	// 使用 binding 标签进行初步参数校验
@@ -12,9 +14,9 @@ type LoginRequest struct {
 
 // LoginResponse 登录成功响应
 type LoginResponse struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn   int64  `json:"expires_in"` // 过期时间戳
-	TokenType   string `json:"token_type"` // 默认 "Bearer"
+	AccessToken string    `json:"access_token"`
+	ExpiresAt   time.Time `json:"expires_at"` // 过期时间戳
+	TokenType   string    `json:"token_type"` // 默认 "Bearer"
 }
 
 type ArticleDTO struct {

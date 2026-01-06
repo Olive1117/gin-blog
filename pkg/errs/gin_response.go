@@ -7,11 +7,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Response struct {
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
+	Data any    `json:"data"`
+}
+
 func Success(ctx *gin.Context, data any) {
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"msg":  "ok",
-		"data": data,
+	if data == nil {
+		data = gin.H{}
+	}
+	ctx.JSON(http.StatusOK, Response{
+		Code: 200,
+		Msg:  "ok",
+		Data: data,
 	})
 }
 
@@ -20,17 +29,17 @@ func Fail(ctx *gin.Context, err error) {
 	var appErr *AppError
 	// 尝试断言是否为自定义的 AppError
 	if errors.As(err, &appErr) {
-		ctx.JSON(appErr.HttpCode, gin.H{
-			"code": appErr.Code,
-			"msg":  appErr.Message,
-			"data": nil,
+		ctx.JSON(appErr.HttpCode, Response{
+			Code: appErr.Code,
+			Msg:  appErr.Message,
+			Data: gin.H{},
 		})
 		return
 	}
 	// 如果是未知错误，返回 500
-	ctx.JSON(http.StatusInternalServerError, gin.H{
-		"code": 500,
-		"msg":  "服务器内部错误",
-		"data": nil,
+	ctx.JSON(http.StatusInternalServerError, Response{
+		Code: 500,
+		Msg:  "服务器内部错误",
+		Data: gin.H{},
 	})
 }

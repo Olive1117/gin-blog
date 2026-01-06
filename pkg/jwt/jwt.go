@@ -31,7 +31,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func (j *JWTHandler) GenerateToken(userID uint, username string) (string, time.Duration, error) {
+func (j *JWTHandler) GenerateToken(userID uint, username string) (string, time.Time, error) {
 	issuedAt := time.Now()
 	expirationTime := issuedAt.Add(3 * time.Hour)
 	claims := Claims{
@@ -46,9 +46,9 @@ func (j *JWTHandler) GenerateToken(userID uint, username string) (string, time.D
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(j.secret)
 	if err != nil {
-		return "", 0, err
+		return "", time.Time{}, err
 	}
-	return tokenString, time.Hour, nil
+	return tokenString, expirationTime, nil
 }
 
 func (j *JWTHandler) ParseToken(tokenString string) (*Claims, error) {

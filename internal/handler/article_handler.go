@@ -35,7 +35,22 @@ func (a *ArticleHandler) Create(c *gin.Context) {
 	}
 	errs.Success(c, art)
 }
-func (a *ArticleHandler) Delete(c *gin.Context) {}
+func (a *ArticleHandler) Delete(c *gin.Context) {
+	cx := c.Request.Context()
+	id64, err := convertor.ToInt(c.Param("id"))
+	var id uint = uint(id64)
+	if err != nil {
+		logger.FromContext(cx).Warn("参数错误", zap.Error(err))
+		errs.Fail(c, errs.ErrInvalidParam)
+		return
+	}
+	rowsAffected, err := a.service.Remove(cx, id)
+	if err != nil {
+		errs.Fail(c, err)
+		return
+	}
+	errs.Success(c, gin.H{"rowsAffected": rowsAffected})
+}
 func (a *ArticleHandler) Get(c *gin.Context) {
 	cx := c.Request.Context()
 	id64, err := convertor.ToInt(c.Param("id"))
@@ -63,5 +78,23 @@ func (a *ArticleHandler) Get(c *gin.Context) {
 	}
 	errs.Success(c, res)
 }
-func (a *ArticleHandler) Update(c *gin.Context) {}
-func (a *ArticleHandler) List(c *gin.Context)   {}
+func (a *ArticleHandler) Update(c *gin.Context) {
+	var (
+		id  uint
+		art model.ArticleDTO
+		err error
+	)
+	cx := c.Request.Context()
+	id64, err := convertor.ToInt(c.Param("id"))
+	id = uint(id64)
+	err = c.ShouldBindJSON(&art)
+	if err != nil {
+		logger.FromContext(cx).Warn("参数错误", zap.Error(err))
+		errs.Fail(c, errs.ErrInvalidParam)
+		return
+	}
+	logger.FromContext(cx).Debug("更新文章", zap.Uint("id", id), zap.Any("文章", art))
+	err = a.service.Update(cx, id, art)
+	errs.Success(c, art)
+}
+func (a *ArticleHandler) List(c *gin.Context) {}

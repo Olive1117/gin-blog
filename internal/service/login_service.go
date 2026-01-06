@@ -35,14 +35,14 @@ func (l *LoginService) Login(c context.Context, req *model.LoginRequest) (*model
 		}
 		return nil, errs.Error
 	}
-	token, expiresIn, err := l.jwt.GenerateToken(id, req.Username)
+	token, expiresAt, err := l.jwt.GenerateToken(id, req.Username)
 	if err != nil {
 		logger.FromContext(c).Warn(errs.ErrLoginToken.Message, zap.Error(err))
 		return nil, errs.ErrLoginToken
 	}
 	res := &model.LoginResponse{
 		AccessToken: token,
-		ExpiresIn:   int64(expiresIn.Seconds()),
+		ExpiresAt:   expiresAt,
 		TokenType:   "Bearer",
 	}
 	return res, nil
