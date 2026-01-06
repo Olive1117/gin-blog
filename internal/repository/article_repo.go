@@ -40,3 +40,26 @@ func (r *ArticleRepo) SyncTags(ctx context.Context, names []string) ([]model.Tag
 func (r *ArticleRepo) CreateArticle(c context.Context, article *model.Article) error {
 	return r.Conn(c).Omit("Tags.*").Create(article).Error
 }
+
+func (r *ArticleRepo) FindAllArticle(c context.Context, page, pageSize int, entity *model.Article) ([]model.Article, error) {
+	db := r.Conn(c)
+	if entity.Category != (model.Category{}) {
+		db = db.Joins("Category").Where("categories.name = ?", entity.Category.Name)
+	}
+	if len(entity.Tags) > 0 {
+		tagNames := make([]string, len(entity.Tags))
+		for i, tag := range entity.Tags {
+			tagNames[i] = tag.Name
+		}
+		db = db.Joins("JOIN blog_article_tag ON blog_article_tag.article_id = blog_article.id").
+			Joins("JOIN blog_tag ON blog_tag.id = blog_article_tag.tag_id").
+			Where("blog_tag.name IN ?", tagNames)
+	}
+	if entity != nil {
+		db = db.Where(entity)
+	}
+	var articles []model.Article
+	offset := (page - 1) * pageSize
+	err := db.Preload("Category").Preload("Tags").Offset(offset).Limit(pageSize).Find(&articles).Error
+	return articles, err
+}

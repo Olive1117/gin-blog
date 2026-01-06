@@ -15,6 +15,13 @@ type ArticleService struct {
 	Ts   *database.GormTransaction
 }
 
+func NewArticleService(repo *repository.ArticleRepo, ts *database.GormTransaction) *ArticleService {
+	return &ArticleService{
+		Repo: repo,
+		Ts:   ts,
+	}
+}
+
 func (a *ArticleService) Update(c context.Context, id uint, art model.ArticleDTO) error {
 	return a.Ts.Transaction(c, func(c context.Context) error {
 		category, err := a.Repo.SyncCategory(c, art.Category)
@@ -37,34 +44,23 @@ func (a *ArticleService) Update(c context.Context, id uint, art model.ArticleDTO
 		logger.FromContext(c).Debug("更新文章业务", zap.Uint("id", id), zap.Any("文章", article))
 		return a.Repo.Update(c, id, article)
 	})
-	// return a.Ts.Transaction(c, func(c context.Context) error {
-	// 	if _, ok := artMap["Category"].(string); ok {
-
-	// 	}
-	// 	return a.Repo.Update(c, id, artMap)
-	// })
 }
 
-func (a *ArticleService) Remove(c context.Context, id uint) (int, error) {
-	rowsAffected, err := a.Repo.Delete(c, id)
-	return rowsAffected, err
-}
+// func (a *ArticleService) Remove(c context.Context, id uint) (int, error) {
+// 	rowsAffected, err := a.Repo.Delete(c, id)
+// 	return rowsAffected, err
+// }
 
-func NewArticleService(repo *repository.ArticleRepo, ts *database.GormTransaction) *ArticleService {
-	return &ArticleService{
-		Repo: repo,
-		Ts:   ts,
-	}
-}
-func (a *ArticleService) GetUserByID(c context.Context, id uint) (*model.Article, error) {
-	article, err := a.Repo.GetById(c, id, "Category", "Tags")
-	logger.FromContext(c).Debug("获取文章业务完成", zap.Uint("id", id), zap.Any("文章", article), zap.Error(err))
-	// logger.FromContext(c).Debug("从数据库取出文章", zap.Any("文章", article))
-	if err != nil {
-		return nil, err
-	}
-	return &article, nil
-}
+// func (a *ArticleService) GetUserByID(c context.Context, id uint) (*model.Article, error) {
+// 	article, err := a.Repo.FindById(c, id, "Category", "Tags")
+// 	logger.FromContext(c).Debug("获取文章业务完成", zap.Uint("id", id), zap.Any("文章", article), zap.Error(err))
+// 	// logger.FromContext(c).Debug("从数据库取出文章", zap.Any("文章", article))
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return &article, nil
+// }
+
 func (a *ArticleService) Create(c context.Context, article *model.ArticleDTO) error {
 	logger.FromContext(c).Debug("创建文章业务")
 	return a.Ts.Transaction(c, func(c context.Context) error {

@@ -29,3 +29,10 @@ type ArticleDTO struct {
 
 	Tags []string `json:"tags"`
 }
+
+type ArticleQuery struct {
+	Title    string   `form:"title"`
+	Category string   `form:"category"`
+	Tags     []string `form:"tag"`
+	State    *int8    `form:"state"`
+}

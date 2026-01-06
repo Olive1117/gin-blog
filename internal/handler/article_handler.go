@@ -44,7 +44,7 @@ func (a *ArticleHandler) Delete(c *gin.Context) {
 		errs.Fail(c, errs.ErrInvalidParam)
 		return
 	}
-	rowsAffected, err := a.service.Remove(cx, id)
+	rowsAffected, err := a.service.Repo.Delete(cx, id)
 	if err != nil {
 		errs.Fail(c, err)
 		return
@@ -61,7 +61,7 @@ func (a *ArticleHandler) Get(c *gin.Context) {
 		errs.Fail(c, errs.ErrInvalidParam)
 		return
 	}
-	article, err := a.service.GetUserByID(cx, id)
+	article, err := a.service.Repo.FindById(c, id, "Category", "Tags")
 	if err != nil {
 		errs.Fail(c, err)
 		return
@@ -97,4 +97,46 @@ func (a *ArticleHandler) Update(c *gin.Context) {
 	err = a.service.Update(cx, id, art)
 	errs.Success(c, art)
 }
-func (a *ArticleHandler) List(c *gin.Context) {}
+
+func (a *ArticleHandler) List(c *gin.Context) {
+	cx := c.Request.Context()
+	page64, _ := convertor.ToInt(c.DefaultQuery("page", "1"))
+	pageSize64, _ := convertor.ToInt(c.DefaultQuery("page_size", "10"))
+	page := int(page64)
+	pageSize := int(pageSize64)
+	query := &model.ArticleQuery{}
+	if err := c.ShouldBindQuery(query); err != nil {
+		logger.FromContext(cx).Warn("参数错误", zap.Error(err))
+		errs.Fail(c, errs.ErrInvalidParam)
+		return
+	}
+	article := &model.Article{
+		Title: query.Title,
+		State: query.State,
+	}
+	article.Category.Name = query.Category
+	for _, name := range query.Tags {
+		article.Tags = append(article.Tags, model.Tag{Name: name})
+	}
+	logger.FromContext(cx).Debug("获取文章列表", zap.Int("page", page), zap.Int("page_size", pageSize), zap.Any("query", query))
+	articles, err := a.service.Repo.FindAllArticle(cx, page, pageSize, article)
+	if err != nil {
+		errs.Fail(c, err)
+		return
+	}
+	var res []model.ArticleDTO
+	for _, article := range articles {
+		item := model.ArticleDTO{
+			Title:    article.Title,
+			Desc:     article.Desc,
+			Content:  article.Content,
+			State:    article.State,
+			Category: article.Category.Name,
+		}
+		for _, tag := range article.Tags {
+			item.Tags = append(item.Tags, tag.Name)
+		}
+		res = append(res, item)
+	}
+	errs.Success(c, res)
+}

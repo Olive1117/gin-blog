@@ -45,6 +45,6 @@ func InitRouter(router *gin.Engine, j *jwt.JWTHandler, login *handler.LoginHandl
 		private.POST("/article", article.Create)
 		private.DELETE("/article/:id", article.Delete)
 		private.PUT("/article/:id", article.Update)
+		private.GET("/articles", article.List)
 	}
-
 }
