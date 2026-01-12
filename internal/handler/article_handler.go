@@ -5,23 +5,23 @@ import (
 	"github.com/Olive1117/gin-blog/internal/service"
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/logger"
-	"github.com/duke-git/lancet/v2/convertor"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
+	"github.com/spf13/cast"
 	"go.uber.org/zap"
 )
 
-type ArticleHandler struct {
-	service *service.ArticleService
+type articleHandler struct {
+	service service.ArticleService
 }
 
-func NewArticleHandler(service *service.ArticleService) *ArticleHandler {
-	return &ArticleHandler{
+func NewArticleHandler(service service.ArticleService) ArticleHandler {
+	return &articleHandler{
 		service: service,
 	}
 }
 
-func (a *ArticleHandler) Create(c *gin.Context) {
+func (a *articleHandler) Create(c *gin.Context) {
 	cx := c.Request.Context()
 	var articleDTO model.ArticleDTO
 	var article model.Article
@@ -39,15 +39,9 @@ func (a *ArticleHandler) Create(c *gin.Context) {
 	}
 	errs.Success(c, articleDTO)
 }
-func (a *ArticleHandler) Delete(c *gin.Context) {
+func (a *articleHandler) Delete(c *gin.Context) {
 	cx := c.Request.Context()
-	id64, err := convertor.ToInt(c.Param("id"))
-	var id uint = uint(id64)
-	if err != nil {
-		logger.FromContext(cx).Warn("参数错误", zap.Error(err))
-		errs.Fail(c, errs.ErrInvalidParam)
-		return
-	}
+	id := cast.ToUint(c.Param("id"))
 
 	rowsAffected, err := a.service.Delete(cx, id)
 	if err != nil {
@@ -56,16 +50,10 @@ func (a *ArticleHandler) Delete(c *gin.Context) {
 	}
 	errs.Success(c, gin.H{"rowsAffected": rowsAffected})
 }
-func (a *ArticleHandler) Get(c *gin.Context) {
+func (a *articleHandler) Get(c *gin.Context) {
 	cx := c.Request.Context()
-	id64, err := convertor.ToInt(c.Param("id"))
-	var id uint = uint(id64)
+	id := cast.ToUint(c.Param("id"))
 	logger.FromContext(cx).Debug("获取文章", zap.Uint("id", id))
-	if err != nil {
-		logger.FromContext(cx).Warn("参数错误", zap.Error(err))
-		errs.Fail(c, errs.ErrInvalidParam)
-		return
-	}
 
 	article, err := a.service.Get(cx, id)
 	if err != nil {
@@ -76,15 +64,13 @@ func (a *ArticleHandler) Get(c *gin.Context) {
 	copier.CopyWithOption(&articleDTO, &article, copier.Option{IgnoreEmpty: true})
 	errs.Success(c, articleDTO)
 }
-func (a *ArticleHandler) Update(c *gin.Context) {
+func (a *articleHandler) Update(c *gin.Context) {
+	cx := c.Request.Context()
 	var (
-		id         uint
 		articleDTO model.ArticleDTO
 		article    model.Article
 	)
-	cx := c.Request.Context()
-	id64, _ := convertor.ToInt(c.Param("id"))
-	id = uint(id64)
+	id := cast.ToUint(c.Param("id"))
 	err := c.ShouldBindJSON(&articleDTO)
 	if err != nil {
 		logger.FromContext(cx).Warn("参数错误", zap.Error(err))
@@ -102,18 +88,16 @@ func (a *ArticleHandler) Update(c *gin.Context) {
 	errs.Success(c, articleDTO)
 }
 
-func (a *ArticleHandler) List(c *gin.Context) {
+func (a *articleHandler) List(c *gin.Context) {
+	cx := c.Request.Context()
 	var (
 		articles    []model.Article
 		articleDTOs []model.ArticleDTO
 		article     model.Article
 		query       model.ArticleQuery
 	)
-	cx := c.Request.Context()
-	page64, _ := convertor.ToInt(c.DefaultQuery("page", "1"))
-	pageSize64, _ := convertor.ToInt(c.DefaultQuery("page_size", "10"))
-	page := int(page64)
-	pageSize := int(pageSize64)
+	page := cast.ToInt(c.DefaultQuery("page", "1"))
+	pageSize := cast.ToInt(c.DefaultQuery("page_size", "10"))
 	if err := c.ShouldBindQuery(&query); err != nil {
 		logger.FromContext(cx).Warn("参数错误", zap.Error(err))
 		errs.Fail(c, errs.ErrInvalidParam)

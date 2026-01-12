@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Olive1117/gin-blog/pkg/contextutil"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/duke-git/lancet/v2/random"
 	"github.com/gin-gonic/gin"
@@ -29,9 +28,9 @@ func GinLogger() gin.HandlerFunc {
 			}
 		}
 		// 注入traceID供logger或其他使用
-		newctx := contextutil.SetTraceID(c.Request.Context(), traceID)
+		newctx := logger.SetTraceID(c.Request.Context(), traceID)
 		// 生成每个请求唯一*zap.logger，防止重复生成多个*zap.logger子实例
-		newctx = contextutil.SetContextLoggerKey(newctx, logger.L.With(zap.String("trace_id", traceID)))
+		newctx = logger.SetCurrentUser(newctx, logger.L.With(zap.String("trace_id", traceID)))
 		c.Request = c.Request.WithContext(newctx)
 
 		start := time.Now()

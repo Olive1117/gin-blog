@@ -1,15 +1,19 @@
 package model
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
 type BaseModel struct {
-	gorm.Model
-
-	CreatedBy uint `gorm:"column:created_by;default:NULL"`
-	UpdatedBy uint `gorm:"column:updated_by;default:NULL"`
-	DeletedBy uint `gorm:"column:deleted_by;default:NULL"`
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+	CreatedBy uint           `gorm:"column:created_by;default:NULL"`
+	UpdatedBy uint           `gorm:"column:updated_by;default:NULL"`
+	DeletedBy uint           `gorm:"column:deleted_by;default:NULL"`
 }
 
 type User struct {

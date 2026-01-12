@@ -9,15 +9,15 @@ import (
 	"go.uber.org/zap"
 )
 
-type LoginHandler struct {
-	Server *service.LoginService
+type loginHandler struct {
+	Server service.LoginService
 }
 
-func NewLoginHandler(store *service.LoginService) *LoginHandler {
-	return &LoginHandler{Server: store}
+func NewLoginHandler(store service.LoginService) LoginHandler {
+	return &loginHandler{Server: store}
 }
 
-func (l *LoginHandler) Login(c *gin.Context) {
+func (l *loginHandler) Login(c *gin.Context) {
 	cx := c.Request.Context()
 	logger.FromContext(cx).Debug("登录")
 	var req model.LoginRequest

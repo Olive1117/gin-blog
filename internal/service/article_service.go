@@ -5,24 +5,23 @@ import (
 
 	"github.com/Olive1117/gin-blog/internal/model"
 	"github.com/Olive1117/gin-blog/internal/repository"
-	"github.com/Olive1117/gin-blog/pkg/database"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"go.uber.org/zap"
 )
 
-type ArticleService struct {
-	Repo *repository.ArticleRepo
-	Ts   *database.GormTransaction
+type articleService struct {
+	Repo repository.ArticleRepo
+	Ts   model.TransactionManager
 }
 
-func NewArticleService(repo *repository.ArticleRepo, ts *database.GormTransaction) *ArticleService {
-	return &ArticleService{
+func NewArticleService(repo repository.ArticleRepo, ts model.TransactionManager) ArticleService {
+	return &articleService{
 		Repo: repo,
 		Ts:   ts,
 	}
 }
 
-func (a *ArticleService) Update(c context.Context, article *model.Article) error {
+func (a *articleService) Update(c context.Context, article *model.Article) error {
 	return a.Ts.Transaction(c, func(c context.Context) error {
 		category, err := a.Repo.SyncCategory(c, article.Category.Name)
 		if err != nil {
@@ -44,7 +43,7 @@ func (a *ArticleService) Update(c context.Context, article *model.Article) error
 	})
 }
 
-func (a *ArticleService) Create(c context.Context, article *model.Article) error {
+func (a *articleService) Create(c context.Context, article *model.Article) error {
 	logger.FromContext(c).Debug("创建文章业务")
 	return a.Ts.Transaction(c, func(c context.Context) error {
 		// 1. 同步分类
@@ -72,20 +71,20 @@ func (a *ArticleService) Create(c context.Context, article *model.Article) error
 			Tags:       tags,
 		}
 		logger.FromContext(c).Debug("即将插入文章", zap.Any("文章", article))
-		// 4. 调用 BaseRepo 提供的 Create 方法
+		// 4. 调用 Create 方法
 		return a.Repo.CreateArticle(c, article)
 	})
 }
 
-func (a *ArticleService) Get(c context.Context, id uint) (model.Article, error) {
+func (a *articleService) Get(c context.Context, id uint) (model.Article, error) {
 	return a.Repo.FindById(c, id, "Category", "Tags")
 }
 
-func (a *ArticleService) Delete(c context.Context, id uint) (int, error) {
+func (a *articleService) Delete(c context.Context, id uint) (int, error) {
 	// 可以在这里增加删除后的逻辑（如清理 Redis）
 	return a.Repo.Delete(c, id)
 }
 
-func (a *ArticleService) List(c context.Context, page, pageSize int, filter *model.Article) ([]model.Article, error) {
+func (a *articleService) List(c context.Context, page, pageSize int, filter *model.Article) ([]model.Article, error) {
 	return a.Repo.FindAllArticle(c, page, pageSize, filter)
 }

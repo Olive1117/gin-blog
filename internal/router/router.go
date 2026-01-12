@@ -3,13 +3,12 @@ package router
 import (
 	"github.com/Olive1117/gin-blog/internal/handler"
 	"github.com/Olive1117/gin-blog/internal/middleware"
-	"github.com/Olive1117/gin-blog/pkg/jwt"
 	"github.com/gin-gonic/gin"
 )
 
-func InitRouter(router *gin.Engine, j *jwt.JWTHandler, login *handler.LoginHandler, article *handler.ArticleHandler) {
+func InitRouter(router *gin.Engine, handlerContainer *handler.HandlerContainer, middlewareContainer *middleware.MiddlewareContainer) {
 	router.Use(gin.Logger())
-	router.Use(middleware.GinRecovery(false))
+	router.Use(middlewareContainer.GinRecovery)
 	router.GET("/test", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{
 			"code": 200,
@@ -20,7 +19,7 @@ func InitRouter(router *gin.Engine, j *jwt.JWTHandler, login *handler.LoginHandl
 	router.GET("/panic", func(c *gin.Context) {
 		panic("测试：这是一个模拟的崩溃")
 	})
-	router.Use(middleware.GinLogger())
+	router.Use(middlewareContainer.Logger)
 	public := router.Group("/api/v1")
 	{
 		public.GET("/test1", func(ctx *gin.Context) {
@@ -30,9 +29,9 @@ func InitRouter(router *gin.Engine, j *jwt.JWTHandler, login *handler.LoginHandl
 				"data": "",
 			})
 		})
-		public.POST("/login", login.Login)
+		public.POST("/login", handlerContainer.Login.Login)
 	}
-	private := router.Group("/api/v1").Use(middleware.JwtAuth(j))
+	private := router.Group("/api/v1").Use(middlewareContainer.Jwt)
 	{
 		private.GET("/test2", func(ctx *gin.Context) {
 			ctx.JSON(200, gin.H{
@@ -41,10 +40,10 @@ func InitRouter(router *gin.Engine, j *jwt.JWTHandler, login *handler.LoginHandl
 				"data": "",
 			})
 		})
-		private.GET("/article/:id", article.Get)
-		private.POST("/article", article.Create)
-		private.DELETE("/article/:id", article.Delete)
-		private.PUT("/article/:id", article.Update)
-		private.GET("/articles", article.List)
+		private.GET("/article/:id", handlerContainer.Article.Get)
+		private.POST("/article", handlerContainer.Article.Create)
+		private.DELETE("/article/:id", handlerContainer.Article.Delete)
+		private.PUT("/article/:id", handlerContainer.Article.Update)
+		private.GET("/articles", handlerContainer.Article.List)
 	}
 }

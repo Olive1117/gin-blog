@@ -7,39 +7,34 @@ import (
 	"gorm.io/gorm"
 )
 
-type ArticleRepo struct {
-	*BaseRepo[model.Article]
+type articleRepo struct {
+	BaseRepo[model.Article]
 }
 
-func NewArticleRepo(db *gorm.DB) *ArticleRepo {
-	return &ArticleRepo{
+func NewArticleRepo(db *gorm.DB) ArticleRepo {
+	return &articleRepo{
 		BaseRepo: NewBaseRepo[model.Article](db),
 	}
 }
 
 // 同步分类
-func (r *ArticleRepo) SyncCategory(ctx context.Context, name string) (*model.Category, error) {
+func (r *articleRepo) SyncCategory(ctx context.Context, name string) (*model.Category, error) {
 	var category = &model.Category{Name: name}
 	err := r.Conn(ctx).WithContext(ctx).Where("name = ?", name).FirstOrCreate(category).Error
 	return category, err
 }
 
 // 同步标签
-func (r *ArticleRepo) SyncTags(ctx context.Context, names []string) ([]model.Tag, error) {
+func (r *articleRepo) SyncTags(ctx context.Context, names []string) ([]model.Tag, error) {
 	if len(names) == 0 {
 		return []model.Tag{}, nil
 	}
 	var tags []model.Tag
-	// for _, name := range names {
-	// 	var tag = &model.Tag{Name: name}
-	// 	if err := r.Conn(ctx).WithContext(ctx).Where("name = ?", name).FirstOrCreate(&tag).Error; err != nil {
-	// 		return nil, err
-	// 	}
-	// 	tags = append(tags, *tag)
-	// }
+	// 根据标签名列表获取已有标签
 	if err := r.Conn(ctx).WithContext(ctx).Where("name IN ?", names).Find(&tags).Error; err != nil {
 		return nil, err
 	}
+	// 找出不存在的标签并创建
 	existingNames := make(map[string]bool)
 	for _, tag := range tags {
 		existingNames[tag.Name] = true
@@ -59,11 +54,12 @@ func (r *ArticleRepo) SyncTags(ctx context.Context, names []string) ([]model.Tag
 	return tags, nil
 }
 
-func (r *ArticleRepo) CreateArticle(c context.Context, article *model.Article) error {
+func (r *articleRepo) CreateArticle(c context.Context, article *model.Article) error {
+	// 业务代码中已经处理了标签的关联关系，这里创建文章时忽略标签字段
 	return r.Conn(c).Omit("Tags.*").Create(article).Error
 }
 
-func (r *ArticleRepo) FindAllArticle(c context.Context, page, pageSize int, entity *model.Article) ([]model.Article, error) {
+func (r *articleRepo) FindAllArticle(c context.Context, page, pageSize int, entity *model.Article) ([]model.Article, error) {
 	db := r.Conn(c)
 	if entity.Category.Name != "" {
 		db = db.Joins("Category").Where("category.name = ?", entity.Category.Name)
@@ -73,9 +69,7 @@ func (r *ArticleRepo) FindAllArticle(c context.Context, page, pageSize int, enti
 		for i, tag := range entity.Tags {
 			tagNames[i] = tag.Name
 		}
-		// db = db.Joins("JOIN blog_article_tag ON blog_article_tag.article_id = blog_article.id").
-		// 	Joins("JOIN blog_tag ON blog_tag.id = blog_article_tag.tag_id").
-		// 	Where("blog_tag.name IN ?", tagNames).Distinct()
+		// 通过子查询过滤包含指定标签的文章
 		subQuery := r.Conn(c).Table("blog_article_tag").
 			Select("article_id").
 			Joins("JOIN blog_tag ON blog_tag.id = blog_article_tag.tag_id").
@@ -93,7 +87,7 @@ func (r *ArticleRepo) FindAllArticle(c context.Context, page, pageSize int, enti
 	return articles, err
 }
 
-func (r *ArticleRepo) UpdateArticle(c context.Context, article *model.Article) error {
+func (r *articleRepo) UpdateArticle(c context.Context, article *model.Article) error {
 	return r.Conn(c).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Omit("Tags", "Category").Where("id = ?", article.ID).Updates(article).Error; err != nil {
 			return err

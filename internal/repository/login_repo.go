@@ -9,17 +9,17 @@ import (
 	"gorm.io/gorm"
 )
 
-type LoginRepo struct {
+type loginRepo struct {
 	db *gorm.DB
 }
 
-func NewLoginRepo(db *gorm.DB) *LoginRepo {
-	return &LoginRepo{
+func NewLoginRepo(db *gorm.DB) LoginRepo {
+	return &loginRepo{
 		db: db,
 	}
 }
 
-func (l *LoginRepo) CheckLogin(c context.Context, username string, password string) (uint, error) {
+func (l *loginRepo) CheckLogin(c context.Context, username string, password string) (uint, error) {
 	var login model.User
 	err := l.db.WithContext(c).Select("id").Where(&model.User{Username: username, Password: password}).First(&login).Error
 	if login.ID > 0 {

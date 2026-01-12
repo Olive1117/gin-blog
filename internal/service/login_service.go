@@ -7,25 +7,24 @@ import (
 	"github.com/Olive1117/gin-blog/internal/model"
 	"github.com/Olive1117/gin-blog/internal/repository"
 	"github.com/Olive1117/gin-blog/pkg/errs"
-	"github.com/Olive1117/gin-blog/pkg/jwt"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
-type LoginService struct {
-	Repo *repository.LoginRepo
-	jwt  *jwt.JWTHandler
+type loginService struct {
+	Repo repository.LoginRepo
+	jwt  model.JWTHandler
 }
 
-func NewLoginService(store *repository.LoginRepo, jwt *jwt.JWTHandler) *LoginService {
-	return &LoginService{
+func NewLoginService(store repository.LoginRepo, jwt model.JWTHandler) LoginService {
+	return &loginService{
 		Repo: store,
 		jwt:  jwt,
 	}
 }
 
-func (l *LoginService) Login(c context.Context, req *model.LoginRequest) (*model.LoginResponse, error) {
+func (l *loginService) Login(c context.Context, req *model.LoginRequest) (*model.LoginResponse, error) {
 	logger.FromContext(c).Debug("登录业务代码")
 	id, err := l.Repo.CheckLogin(c, req.Username, req.Password)
 	if err != nil {
