@@ -26,12 +26,12 @@ func NewJWT(secret string, issuer string) *JWTHandler {
 }
 
 type Claims struct {
-	UserID   uint   `json:"user_id"`
+	UserID   int64  `json:"user_id"`
 	Username string `json:"username"`
 	jwt.RegisteredClaims
 }
 
-func (j *JWTHandler) GenerateToken(userID uint, username string) (string, time.Time, error) {
+func (j *JWTHandler) GenerateToken(userID int64, username string) (string, time.Time, error) {
 	issuedAt := time.Now()
 	expirationTime := issuedAt.Add(3 * time.Hour)
 	claims := Claims{

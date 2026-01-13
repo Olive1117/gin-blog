@@ -8,7 +8,7 @@ import (
 )
 
 type JWTHandler interface {
-	GenerateToken(userID uint, username string) (string, time.Time, error)
+	GenerateToken(userID int64, username string) (string, time.Time, error)
 	ParseToken(tokenString string) (*jwt.Claims, error)
 }
 

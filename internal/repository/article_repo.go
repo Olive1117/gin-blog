@@ -17,43 +17,6 @@ func NewArticleRepo(db *gorm.DB) ArticleRepo {
 	}
 }
 
-// 同步分类
-func (r *articleRepo) SyncCategory(ctx context.Context, name string) (*model.Category, error) {
-	var category = &model.Category{Name: name}
-	err := r.Conn(ctx).WithContext(ctx).Where("name = ?", name).FirstOrCreate(category).Error
-	return category, err
-}
-
-// 同步标签
-func (r *articleRepo) SyncTags(ctx context.Context, names []string) ([]model.Tag, error) {
-	if len(names) == 0 {
-		return []model.Tag{}, nil
-	}
-	var tags []model.Tag
-	// 根据标签名列表获取已有标签
-	if err := r.Conn(ctx).WithContext(ctx).Where("name IN ?", names).Find(&tags).Error; err != nil {
-		return nil, err
-	}
-	// 找出不存在的标签并创建
-	existingNames := make(map[string]bool)
-	for _, tag := range tags {
-		existingNames[tag.Name] = true
-	}
-	var newTags []model.Tag
-	for _, name := range names {
-		if !existingNames[name] {
-			newTags = append(newTags, model.Tag{Name: name})
-		}
-	}
-	if len(newTags) > 0 {
-		if err := r.Conn(ctx).WithContext(ctx).Create(&newTags).Error; err != nil {
-			return nil, err
-		}
-		tags = append(tags, newTags...)
-	}
-	return tags, nil
-}
-
 func (r *articleRepo) CreateArticle(c context.Context, article *model.Article) error {
 	// 业务代码中已经处理了标签的关联关系，这里创建文章时忽略标签字段
 	return r.Conn(c).Omit("Tags.*").Create(article).Error

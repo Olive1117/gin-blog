@@ -8,8 +8,8 @@ import (
 
 type ArticleService interface {
 	Create(c context.Context, article *model.Article) error
-	Delete(c context.Context, id uint) (int, error)
-	Get(c context.Context, id uint) (model.Article, error)
+	Delete(c context.Context, id int64) (int, error)
+	Get(c context.Context, id int64) (model.Article, error)
 	List(c context.Context, page int, pageSize int, filter *model.Article) ([]model.Article, error)
 	Update(c context.Context, article *model.Article) error
 }

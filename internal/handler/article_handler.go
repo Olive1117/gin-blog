@@ -41,7 +41,7 @@ func (a *articleHandler) Create(c *gin.Context) {
 }
 func (a *articleHandler) Delete(c *gin.Context) {
 	cx := c.Request.Context()
-	id := cast.ToUint(c.Param("id"))
+	id := cast.ToInt64(c.Param("id"))
 
 	rowsAffected, err := a.service.Delete(cx, id)
 	if err != nil {
@@ -52,8 +52,8 @@ func (a *articleHandler) Delete(c *gin.Context) {
 }
 func (a *articleHandler) Get(c *gin.Context) {
 	cx := c.Request.Context()
-	id := cast.ToUint(c.Param("id"))
-	logger.FromContext(cx).Debug("获取文章", zap.Uint("id", id))
+	id := cast.ToInt64(c.Param("id"))
+	logger.FromContext(cx).Debug("获取文章", zap.Int64("id", id))
 
 	article, err := a.service.Get(cx, id)
 	if err != nil {
@@ -70,14 +70,14 @@ func (a *articleHandler) Update(c *gin.Context) {
 		articleDTO model.ArticleDTO
 		article    model.Article
 	)
-	id := cast.ToUint(c.Param("id"))
+	id := cast.ToInt64(c.Param("id"))
 	err := c.ShouldBindJSON(&articleDTO)
 	if err != nil {
 		logger.FromContext(cx).Warn("参数错误", zap.Error(err))
 		errs.Fail(c, errs.ErrInvalidParam)
 		return
 	}
-	logger.FromContext(cx).Debug("更新文章", zap.Uint("id", id), zap.Any("文章", articleDTO))
+	logger.FromContext(cx).Debug("更新文章", zap.Int64("id", id), zap.Any("文章", articleDTO))
 	copier.CopyWithOption(&article, &articleDTO, copier.Option{IgnoreEmpty: true})
 	article.ID = id
 

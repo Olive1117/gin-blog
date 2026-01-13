@@ -6,14 +6,16 @@ import (
 	"gorm.io/gorm"
 )
 
+// TODO 改掉uint
 type BaseModel struct {
-	ID        uint `gorm:"primarykey"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
-	CreatedBy uint           `gorm:"column:created_by;default:NULL"`
-	UpdatedBy uint           `gorm:"column:updated_by;default:NULL"`
-	DeletedBy uint           `gorm:"column:deleted_by;default:NULL"`
+	gorm.Model
+	ID        int64          `gorm:"primaryKey" json:"id,string"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	CreatedBy int64          `gorm:"column:created_by;default:NULL"`
+	UpdatedBy int64          `gorm:"column:updated_by;default:NULL"`
+	DeletedBy int64          `gorm:"column:deleted_by;default:NULL"`
 }
 
 type User struct {
@@ -30,7 +32,7 @@ type Article struct {
 	Content string `json:"content" gorm:"type:text"`
 	State   *int8  `json:"state" gorm:"default:1"`
 
-	CategoryID uint     `json:"category_id" gorm:"index"`
+	CategoryID int64    `json:"category_id" gorm:"index"`
 	Category   Category `json:"category" gorm:"foreignKey:CategoryID"`
 
 	Tags []Tag `json:"tags" gorm:"many2many:article_tag;"`

@@ -20,8 +20,10 @@ func InitContainer(engine *gin.Engine, jwt model.JWTHandler, db *gorm.DB, tx mod
 
 	articleRepo := repository.NewArticleRepo(db)
 	loginRepo := repository.NewLoginRepo(db)
+	categoryRepo := repository.NewCategoryRepo(db)
+	tagRepo := repository.NewTagRepo(db)
 
-	articleService := service.NewArticleService(articleRepo, tx)
+	articleService := service.NewArticleService(articleRepo, tx, tagRepo, categoryRepo)
 	loginService := service.NewLoginService(loginRepo, jwt)
 
 	articleHandler := handler.NewArticleHandler(articleService)

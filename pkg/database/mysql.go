@@ -63,17 +63,17 @@ func CloseDB(db *gorm.DB) {
 	}
 }
 
-type GormTransaction struct {
+type gormTransaction struct {
 	db *gorm.DB
 }
 
-func NewgormTransaction(db *gorm.DB) *GormTransaction {
-	return &GormTransaction{
+func NewgormTransaction(db *gorm.DB) *gormTransaction {
+	return &gormTransaction{
 		db: db,
 	}
 }
 
-func (g *GormTransaction) Transaction(c context.Context, fn func(c context.Context) error) error {
+func (g *gormTransaction) Transaction(c context.Context, fn func(c context.Context) error) error {
 	return g.db.WithContext(c).Transaction(func(tx *gorm.DB) error {
 		newc := context.WithValue(c, "tx", tx)
 		return fn(newc)

@@ -44,7 +44,7 @@ func (b *baseRepo[T]) FindAll(c context.Context, page, pageSize int, entity *T, 
 }
 
 // FindById 根据id获取结构体，preloads是需要预加载的结构体字段
-func (b *baseRepo[T]) FindById(c context.Context, id uint, preloads ...string) (T, error) {
+func (b *baseRepo[T]) FindById(c context.Context, id int64, preloads ...string) (T, error) {
 	db := b.Conn(c)
 	for _, preload := range preloads {
 		db = db.Preload(preload)
@@ -53,7 +53,7 @@ func (b *baseRepo[T]) FindById(c context.Context, id uint, preloads ...string) (
 	err := db.Where("id = ?", id).First(&entity).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.FromContext(c).Warn("记录未找到", zap.Uint("id", id))
+			logger.FromContext(c).Warn("记录未找到", zap.Int64("id", id))
 			return entity, errs.ErrNotFound
 		}
 		logger.FromContext(c).Error("获取记录失败", zap.Error(err))
@@ -68,12 +68,12 @@ func (b *baseRepo[T]) Create(c context.Context, entity *T) error {
 }
 
 // Delete 删除结构体数据，返回删除的行数
-func (b *baseRepo[T]) Delete(c context.Context, id uint) (int, error) {
+func (b *baseRepo[T]) Delete(c context.Context, id int64) (int, error) {
 	return gorm.G[T](b.Conn(c)).Where("id = ?", id).Delete(c)
 }
 
 // Update 更新结构体数据，复杂结构体请使用具体的Repo方法
-func (b *baseRepo[T]) Update(c context.Context, id uint, data any) error {
+func (b *baseRepo[T]) Update(c context.Context, id int64, data any) error {
 	return b.Conn(c).Where("id = ?", id).Updates(data).Error
 }
 

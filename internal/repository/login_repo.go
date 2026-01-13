@@ -19,7 +19,7 @@ func NewLoginRepo(db *gorm.DB) LoginRepo {
 	}
 }
 
-func (l *loginRepo) CheckLogin(c context.Context, username string, password string) (uint, error) {
+func (l *loginRepo) CheckLogin(c context.Context, username string, password string) (int64, error) {
 	var login model.User
 	err := l.db.WithContext(c).Select("id").Where(&model.User{Username: username, Password: password}).First(&login).Error
 	if login.ID > 0 {

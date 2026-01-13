@@ -10,20 +10,24 @@ import (
 )
 
 type articleService struct {
-	Repo repository.ArticleRepo
-	Ts   model.TransactionManager
+	Repo         repository.ArticleRepo
+	Ts           model.TransactionManager
+	TagRepo      repository.TagRepo
+	CategoryRepo repository.CategoryRepo
 }
 
-func NewArticleService(repo repository.ArticleRepo, ts model.TransactionManager) ArticleService {
+func NewArticleService(repo repository.ArticleRepo, ts model.TransactionManager, tagRepo repository.TagRepo, categoryRepo repository.CategoryRepo) ArticleService {
 	return &articleService{
-		Repo: repo,
-		Ts:   ts,
+		Repo:         repo,
+		Ts:           ts,
+		TagRepo:      tagRepo,
+		CategoryRepo: categoryRepo,
 	}
 }
 
 func (a *articleService) Update(c context.Context, article *model.Article) error {
 	return a.Ts.Transaction(c, func(c context.Context) error {
-		category, err := a.Repo.SyncCategory(c, article.Category.Name)
+		category, err := a.CategoryRepo.SyncCategory(c, article.Category.Name)
 		if err != nil {
 			return err
 		}
@@ -31,7 +35,7 @@ func (a *articleService) Update(c context.Context, article *model.Article) error
 		for i, tag := range article.Tags {
 			tagsName[i] = tag.Name
 		}
-		tags, err := a.Repo.SyncTags(c, tagsName)
+		tags, err := a.TagRepo.SyncTags(c, tagsName)
 		if err != nil {
 			return err
 		}
@@ -48,7 +52,7 @@ func (a *articleService) Create(c context.Context, article *model.Article) error
 	return a.Ts.Transaction(c, func(c context.Context) error {
 		// 1. 同步分类
 		logger.FromContext(c).Debug("同步分类")
-		category, err := a.Repo.SyncCategory(c, article.Category.Name)
+		category, err := a.CategoryRepo.SyncCategory(c, article.Category.Name)
 		if err != nil {
 			return err
 		}
@@ -58,7 +62,7 @@ func (a *articleService) Create(c context.Context, article *model.Article) error
 		for i, tag := range article.Tags {
 			tagsName[i] = tag.Name
 		}
-		tags, err := a.Repo.SyncTags(c, tagsName)
+		tags, err := a.TagRepo.SyncTags(c, tagsName)
 		if err != nil {
 			return err
 		}
@@ -76,11 +80,11 @@ func (a *articleService) Create(c context.Context, article *model.Article) error
 	})
 }
 
-func (a *articleService) Get(c context.Context, id uint) (model.Article, error) {
+func (a *articleService) Get(c context.Context, id int64) (model.Article, error) {
 	return a.Repo.FindById(c, id, "Category", "Tags")
 }
 
-func (a *articleService) Delete(c context.Context, id uint) (int, error) {
+func (a *articleService) Delete(c context.Context, id int64) (int, error) {
 	// 可以在这里增加删除后的逻辑（如清理 Redis）
 	return a.Repo.Delete(c, id)
 }
