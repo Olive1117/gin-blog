@@ -45,5 +45,17 @@ func InitRouter(router *gin.Engine, handlerContainer *handler.HandlerContainer, 
 		private.DELETE("/article/:id", handlerContainer.Article.Delete)
 		private.PUT("/article/:id", handlerContainer.Article.Update)
 		private.GET("/articles", handlerContainer.Article.List)
+
+		private.POST("/category", handlerContainer.Category.Create)
+		private.DELETE("/category/:id", handlerContainer.Category.Delete)
+		private.PUT("/category/:id", handlerContainer.Category.Update)
+		private.GET("/category/:id", handlerContainer.Category.Get)
+		private.GET("/categories", handlerContainer.Category.List)
+
+		private.POST("/tag", handlerContainer.Tag.Create)
+		private.DELETE("/tag/:id", handlerContainer.Tag.Delete)
+		private.PUT("/tag/:id", handlerContainer.Tag.Update)
+		private.GET("/tag/:id", handlerContainer.Tag.Get)
+		private.GET("/tags", handlerContainer.Tag.List)
 	}
 }

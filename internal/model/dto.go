@@ -47,3 +47,10 @@ type ArticleQuery struct {
 	TagNames     []string `form:"tag"`
 	State        *int8    `form:"state"`
 }
+
+type CategoryDTO struct {
+	Name string `json:"name"`
+}
+type TagDTO struct {
+	Name string `json:"name"`
+}

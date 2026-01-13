@@ -27,8 +27,10 @@ type LoginRepo interface {
 type TagRepo interface {
 	BaseRepo[model.Tag]
 	SyncTags(ctx context.Context, names []string) ([]model.Tag, error)
+	ExistByName(ctx context.Context, name string) (bool, error)
 }
 type CategoryRepo interface {
 	BaseRepo[model.Category]
 	SyncCategory(ctx context.Context, name string) (*model.Category, error)
+	ExistByName(ctx context.Context, name string) (bool, error)
 }

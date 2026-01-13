@@ -23,3 +23,9 @@ func (r *categoryRepo) SyncCategory(ctx context.Context, name string) (*model.Ca
 	err := r.Conn(ctx).WithContext(ctx).Where("name = ?", name).FirstOrCreate(category).Error
 	return category, err
 }
+
+func (r *categoryRepo) ExistByName(ctx context.Context, name string) (bool, error) {
+	var count int64
+	err := r.Conn(ctx).Model(&model.Category{}).Where("name = ?", name).Count(&count).Error
+	return count > 0, err
+}

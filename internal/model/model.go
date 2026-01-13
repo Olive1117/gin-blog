@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// TODO 改掉uint
 type BaseModel struct {
 	gorm.Model
 	ID        int64          `gorm:"primaryKey" json:"id,string"`

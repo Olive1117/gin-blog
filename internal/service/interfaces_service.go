@@ -16,3 +16,17 @@ type ArticleService interface {
 type LoginService interface {
 	Login(c context.Context, req *model.LoginRequest) (*model.LoginResponse, error)
 }
+type CategoryService interface {
+	Create(c context.Context, category *model.Category) error
+	Delete(c context.Context, id int64) (int, error)
+	Get(c context.Context, id int64) (model.Category, error)
+	List(c context.Context, page int, pageSize int, filter *model.Category) ([]model.Category, error)
+	Update(c context.Context, category *model.Category) error
+}
+type TagService interface {
+	Create(c context.Context, tag *model.Tag) error
+	Delete(c context.Context, id int64) (int, error)
+	Get(c context.Context, id int64) (model.Tag, error)
+	List(c context.Context, page int, pageSize int, filter *model.Tag) ([]model.Tag, error)
+	Update(c context.Context, tag *model.Tag) error
+}

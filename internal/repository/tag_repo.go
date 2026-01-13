@@ -46,3 +46,9 @@ func (r *tagRepo) SyncTags(ctx context.Context, names []string) ([]model.Tag, er
 	}
 	return tags, nil
 }
+
+func (r *tagRepo) ExistByName(ctx context.Context, name string) (bool, error) {
+	var count int64
+	err := r.Conn(ctx).Model(&model.Tag{}).Where("name = ?", name).Count(&count).Error
+	return count > 0, err
+}
