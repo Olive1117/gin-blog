@@ -6,6 +6,7 @@ import (
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/copier"
 	"github.com/spf13/cast"
 	"go.uber.org/zap"
 )
@@ -33,7 +34,9 @@ func (th *tagHandler) Create(c *gin.Context) {
 		errs.Fail(c, err)
 		return
 	}
-	errs.Success(c, tag)
+	var tagDTO model.TagDTO
+	copier.CopyWithOption(&tagDTO, &tag, copier.Option{IgnoreEmpty: true})
+	errs.Success(c, tagDTO)
 }
 
 func (th *tagHandler) List(c *gin.Context) {
@@ -47,12 +50,17 @@ func (th *tagHandler) List(c *gin.Context) {
 	}
 	logger.FromContext(cx).Debug("获取标签列表", zap.Any("过滤器", filter))
 
-	tags, err := th.service.List(cx, page, pageSize, &filter)
+	tags, total, err := th.service.List(cx, page, pageSize, &filter)
 	if err != nil {
 		errs.Fail(c, err)
 		return
 	}
-	errs.Success(c, tags)
+	var tagDTOs []model.TagDTO
+	copier.CopyWithOption(&tagDTOs, &tags, copier.Option{IgnoreEmpty: true})
+	errs.Success(c, gin.H{
+		"list":  tagDTOs,
+		"total": total,
+	})
 }
 
 func (th *tagHandler) Get(c *gin.Context) {
@@ -65,7 +73,9 @@ func (th *tagHandler) Get(c *gin.Context) {
 		errs.Fail(c, err)
 		return
 	}
-	errs.Success(c, tag)
+	var tagDTO model.TagDTO
+	copier.CopyWithOption(&tagDTO, &tag, copier.Option{IgnoreEmpty: true})
+	errs.Success(c, tagDTO)
 }
 
 func (th *tagHandler) Delete(c *gin.Context) {

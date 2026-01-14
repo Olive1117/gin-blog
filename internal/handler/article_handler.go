@@ -106,7 +106,7 @@ func (a *articleHandler) List(c *gin.Context) {
 	copier.CopyWithOption(&article, &query, copier.Option{IgnoreEmpty: true})
 	logger.FromContext(cx).Debug("获取文章列表", zap.Int("page", page), zap.Int("page_size", pageSize), zap.Any("query", &article))
 
-	articles, err := a.service.List(cx, page, pageSize, &article)
+	articles, total, err := a.service.List(cx, page, pageSize, &article)
 	if err != nil {
 		errs.Fail(c, err)
 		return
@@ -114,7 +114,7 @@ func (a *articleHandler) List(c *gin.Context) {
 	copier.CopyWithOption(&articleDTOs, &articles, copier.Option{IgnoreEmpty: true})
 	res := map[string]any{
 		"list":  articleDTOs,
-		"total": len(articleDTOs),
+		"total": total,
 	}
 	errs.Success(c, &res)
 }

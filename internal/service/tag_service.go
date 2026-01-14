@@ -30,7 +30,7 @@ func (ts *tagService) Delete(c context.Context, id int64) (int, error) {
 func (ts *tagService) Get(c context.Context, id int64) (model.Tag, error) {
 	return ts.Repo.FindById(c, id)
 }
-func (ts *tagService) List(c context.Context, page int, pageSize int, filter *model.Tag) ([]model.Tag, error) {
+func (ts *tagService) List(c context.Context, page int, pageSize int, filter *model.Tag) ([]model.Tag, int64, error) {
 	//TODO 这里应该写模糊查询，需要改baseRepo
 	return ts.Repo.FindAll(c, page, pageSize, filter)
 }

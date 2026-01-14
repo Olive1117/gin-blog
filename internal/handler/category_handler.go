@@ -6,6 +6,7 @@ import (
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/copier"
 	"github.com/spf13/cast"
 	"go.uber.org/zap"
 )
@@ -33,7 +34,9 @@ func (ch *categoryHandler) Create(c *gin.Context) {
 		errs.Fail(c, err)
 		return
 	}
-	errs.Success(c, category)
+	var categoryDTO model.CategoryDTO
+	copier.CopyWithOption(&categoryDTO, &category, copier.Option{IgnoreEmpty: true})
+	errs.Success(c, categoryDTO)
 }
 
 func (ch *categoryHandler) List(c *gin.Context) {
@@ -47,12 +50,19 @@ func (ch *categoryHandler) List(c *gin.Context) {
 	}
 	logger.FromContext(cx).Debug("获取分类列表", zap.Any("过滤器", filter))
 
-	categories, err := ch.service.List(cx, page, pageSize, &filter)
+	categories, total, err := ch.service.List(cx, page, pageSize, &filter)
 	if err != nil {
 		errs.Fail(c, err)
 		return
 	}
-	errs.Success(c, categories)
+	var categoryDTOs []model.CategoryDTO
+	copier.CopyWithOption(&categoryDTOs, &categories, copier.Option{IgnoreEmpty: true})
+	errs.Success(c, gin.H{
+		"list":      categoryDTOs,
+		"total":     total,
+		"page":      page,
+		"page_size": pageSize,
+	})
 }
 
 func (ch *categoryHandler) Get(c *gin.Context) {
@@ -64,7 +74,9 @@ func (ch *categoryHandler) Get(c *gin.Context) {
 		errs.Fail(c, err)
 		return
 	}
-	errs.Success(c, category)
+	var categoryDTO model.CategoryDTO
+	copier.CopyWithOption(&categoryDTO, &category, copier.Option{IgnoreEmpty: true})
+	errs.Success(c, categoryDTO)
 }
 
 func (ch *categoryHandler) Update(c *gin.Context) {

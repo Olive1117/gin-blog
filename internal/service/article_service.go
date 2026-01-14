@@ -89,6 +89,6 @@ func (a *articleService) Delete(c context.Context, id int64) (int, error) {
 	return a.Repo.Delete(c, id)
 }
 
-func (a *articleService) List(c context.Context, page, pageSize int, filter *model.Article) ([]model.Article, error) {
+func (a *articleService) List(c context.Context, page, pageSize int, filter *model.Article) ([]model.Article, int64, error) {
 	return a.Repo.FindAllArticle(c, page, pageSize, filter)
 }

@@ -21,7 +21,7 @@ func NewBaseRepo[T any](db *gorm.DB) BaseRepo[T] {
 }
 
 // FindAll 根据条件获取多个记录，支持分页和预加载
-func (b *baseRepo[T]) FindAll(c context.Context, page, pageSize int, entity *T, preloads ...string) ([]T, error) {
+func (b *baseRepo[T]) FindAll(c context.Context, page, pageSize int, entity *T, preloads ...string) ([]T, int64, error) {
 	db := b.Conn(c)
 	for _, preload := range preloads {
 		db = db.Preload(preload)
@@ -29,18 +29,23 @@ func (b *baseRepo[T]) FindAll(c context.Context, page, pageSize int, entity *T, 
 	if entity != nil {
 		db = db.Where(entity)
 	}
+	var total int64
+	if err := db.Model(new(T)).Count(&total).Error; err != nil {
+		logger.FromContext(c).Error("获取记录总数失败", zap.Error(err))
+		return nil, 0, err
+	}
 	var entities []T
 	offset := (page - 1) * pageSize
 	err := db.Offset(offset).Limit(pageSize).Find(&entities).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.FromContext(c).Warn("记录未找到")
-			return entities, errs.ErrNotFound
+			return entities, total, errs.ErrNotFound
 		}
 		logger.FromContext(c).Error("获取记录失败", zap.Error(err))
-		return entities, err
+		return nil, 0, err
 	}
-	return entities, nil
+	return entities, total, nil
 }
 
 // FindById 根据id获取结构体，preloads是需要预加载的结构体字段

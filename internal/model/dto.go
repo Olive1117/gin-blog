@@ -20,6 +20,7 @@ type LoginResponse struct {
 }
 
 type ArticleDTO struct {
+	ID      int64  `json:"id,string"`
 	Title   string `json:"title"`
 	Desc    string `json:"desc"`
 	Content string `json:"content"`
@@ -49,8 +50,12 @@ type ArticleQuery struct {
 }
 
 type CategoryDTO struct {
-	Name string `json:"name"`
+	ID    int64  `json:"id,string"`
+	Name  string `json:"name"`
+	State *int8  `json:"state"`
 }
 type TagDTO struct {
-	Name string `json:"name"`
+	ID    int64  `json:"id,string"`
+	Name  string `json:"name"`
+	State *int8  `json:"state"`
 }

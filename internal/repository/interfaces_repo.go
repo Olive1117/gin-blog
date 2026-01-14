@@ -11,14 +11,14 @@ type BaseRepo[T any] interface {
 	Conn(c context.Context) *gorm.DB
 	Create(c context.Context, entity *T) error
 	Delete(c context.Context, id int64) (int, error)
-	FindAll(c context.Context, page int, pageSize int, entity *T, preloads ...string) ([]T, error)
+	FindAll(c context.Context, page int, pageSize int, entity *T, preloads ...string) ([]T, int64, error)
 	FindById(c context.Context, id int64, preloads ...string) (T, error)
 	Update(c context.Context, id int64, data any) error
 }
 type ArticleRepo interface {
 	BaseRepo[model.Article]
 	CreateArticle(c context.Context, article *model.Article) error
-	FindAllArticle(c context.Context, page int, pageSize int, entity *model.Article) ([]model.Article, error)
+	FindAllArticle(c context.Context, page int, pageSize int, entity *model.Article) ([]model.Article, int64, error)
 	UpdateArticle(c context.Context, article *model.Article) error
 }
 type LoginRepo interface {
