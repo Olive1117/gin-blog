@@ -20,11 +20,13 @@ type LoginResponse struct {
 }
 
 type ArticleDTO struct {
-	ID      int64  `json:"id,string"`
-	Title   string `json:"title"`
-	Desc    string `json:"desc"`
-	Content string `json:"content"`
-	State   *int8  `json:"state"`
+	ID        int64     `json:"id,string"`
+	Title     string    `json:"title"`
+	Desc      string    `json:"desc"`
+	Content   string    `json:"content"`
+	State     *int8     `json:"state"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 
 	CategoryName string `json:"category"`
 

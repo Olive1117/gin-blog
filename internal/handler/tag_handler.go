@@ -58,8 +58,10 @@ func (th *tagHandler) List(c *gin.Context) {
 	var tagDTOs []model.TagDTO
 	copier.CopyWithOption(&tagDTOs, &tags, copier.Option{IgnoreEmpty: true})
 	errs.Success(c, gin.H{
-		"list":  tagDTOs,
-		"total": total,
+		"list":      tagDTOs,
+		"total":     total,
+		"page":      page,
+		"page_size": pageSize,
 	})
 }
 

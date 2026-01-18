@@ -51,6 +51,7 @@ func (r *articleRepo) FindAllArticle(c context.Context, page, pageSize int, enti
 	var articles []model.Article
 	offset := (page - 1) * pageSize
 	if err := db.Preload("Category").Preload("Tags").
+		Omit("Content").
 		Offset(offset).Limit(pageSize).
 		Find(&articles).Error; err != nil {
 		return nil, 0, err

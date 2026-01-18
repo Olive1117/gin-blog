@@ -112,9 +112,10 @@ func (a *articleHandler) List(c *gin.Context) {
 		return
 	}
 	copier.CopyWithOption(&articleDTOs, &articles, copier.Option{IgnoreEmpty: true})
-	res := map[string]any{
-		"list":  articleDTOs,
-		"total": total,
-	}
-	errs.Success(c, &res)
+	errs.Success(c, gin.H{
+		"list":      articleDTOs,
+		"total":     total,
+		"page":      page,
+		"page_size": pageSize,
+	})
 }
