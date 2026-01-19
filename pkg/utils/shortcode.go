@@ -29,3 +29,6 @@ func DecodeByOBID(obID string) int64 {
 
 	return int64(binary.BigEndian.Uint64(fullBuf))
 }
+func IsShortID(identifier string) bool {
+	return strings.HasPrefix(identifier, "OB")
+}

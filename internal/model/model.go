@@ -6,17 +6,17 @@ import (
 	"github.com/Olive1117/gin-blog/pkg/idgen"
 	"github.com/Olive1117/gin-blog/pkg/utils"
 	"gorm.io/gorm"
+	"gorm.io/plugin/soft_delete"
 )
 
 type BaseModel struct {
-	gorm.Model
-	ID        int64          `gorm:"primaryKey;autoIncrement:false" json:"id,string"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
-	CreatedBy int64          `gorm:"column:created_by;default:NULL"`
-	UpdatedBy int64          `gorm:"column:updated_by;default:NULL"`
-	DeletedBy int64          `gorm:"column:deleted_by;default:NULL"`
+	ID        int64                 `gorm:"primaryKey;autoIncrement:false" json:"id,string"`
+	CreatedAt time.Time             `json:"created_at"`
+	UpdatedAt time.Time             `json:"updated_at"`
+	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:idx_unique_logic" json:"-"`
+	CreatedBy int64                 `gorm:"column:created_by;default:0"`
+	UpdatedBy int64                 `gorm:"column:updated_by;default:0"`
+	DeletedBy int64                 `gorm:"column:deleted_by;default:0"`
 }
 
 func (b *BaseModel) BeforeCreate(tx *gorm.DB) (err error) {
@@ -37,7 +37,7 @@ type newUser struct {
 
 	// 账号核心
 	Username string `json:"username" gorm:"type:varchar(50);uniqueIndex;not null"` // 对应 screen_name
-	Email    string `json:"email" gorm:"type:varchar(100);;not null"`
+	Email    string `json:"email" gorm:"type:varchar(100);uniqueIndex;not null"`
 	Password string `json:"-" gorm:"type:varchar(255);not null"`
 
 	// 基本资料
@@ -54,9 +54,8 @@ type newUser struct {
 	FriendCount int `json:"friend_count" gorm:"default:0"` // 关注了多少人
 
 	// 权限控制
-	Role      string    `json:"role" gorm:"type:varchar(20);default:'user'"`
-	Status    *int8     `json:"status" gorm:"type:tinyint;default:1"`
-	CreatedAt time.Time `json:"created_at"`
+	Role   string `json:"role" gorm:"type:varchar(20);default:'user'"`
+	Status *int8  `json:"status" gorm:"type:tinyint;default:1"`
 	//TODO 最后上线时间
 	// LastLoginAt time.Time `json:"last_login_at"`
 }

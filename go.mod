@@ -3,25 +3,25 @@ module github.com/Olive1117/gin-blog
 go 1.25.4
 
 require (
-	github.com/duke-git/lancet/v2 v2.3.8
+	github.com/btcsuite/btcutil v1.0.2
+	github.com/bwmarrin/snowflake v0.3.0
 	github.com/gin-gonic/gin v1.11.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
+	github.com/google/uuid v1.6.0
 	github.com/jinzhu/copier v0.4.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible
+	github.com/spf13/cast v1.10.0
 	go.uber.org/zap v1.27.1
+	gorm.io/plugin/soft_delete v1.2.1
 )
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
-	github.com/btcsuite/btcutil v1.0.2 // indirect
-	github.com/bwmarrin/snowflake v0.3.0 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/spf13/cast v1.10.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
-	golang.org/x/exp v0.0.0-20221208152030-732eee02a75a // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

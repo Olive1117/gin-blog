@@ -15,14 +15,6 @@ import (
 
 func JwtAuth(j model.JWTHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// authHeader := c.GetHeader("Authorization")
-		// if authHeader == "" {
-		// 	logger.FromContext(c.Request.Context()).Warn(errs.ErrLoginCheckTokenFail.Message)
-		// 	errs.Fail(c, errs.ErrLoginCheckTokenFail)
-		// 	c.Abort()
-		// 	return
-		// }
-		// parse := strings.SplitN(authHeader, " ", 2)
 		parse := strings.SplitN(c.GetHeader("Authorization"), " ", 2)
 		if !(parse[0] == "Bearer" && len(parse) == 2) {
 			logger.FromContext(c.Request.Context()).Warn(errs.ErrLoginCheckTokenFail.Message)

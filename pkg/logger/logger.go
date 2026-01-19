@@ -44,6 +44,7 @@ func NewConsoleEncoder() zapcore.Encoder {
 	encoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("2006-01-02 15:04:05")
 	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	encoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
+	encoderConfig.LineEnding = zapcore.DefaultLineEnding
 	return zapcore.NewConsoleEncoder(encoderConfig)
 }
 func getLevel(level string) zapcore.Level {

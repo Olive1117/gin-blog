@@ -5,13 +5,12 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
-	"runtime/debug"
 	"strings"
 	"time"
 
 	"github.com/Olive1117/gin-blog/pkg/logger"
-	"github.com/duke-git/lancet/v2/random"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -20,12 +19,8 @@ func GinLogger() gin.HandlerFunc {
 		// 获取请求跟踪id，没有请求ai则uuid生成
 		traceID := c.GetHeader("X-Trace-ID")
 		if traceID == "" {
-			uuid, err := random.UUIdV4()
-			if err != nil {
-				logger.L.Warn("Trace生成错误")
-			} else {
-				traceID = uuid
-			}
+			uuid := uuid.NewString()
+			traceID = uuid
 		}
 		// 注入traceID供logger或其他使用
 		newctx := logger.SetTraceID(c.Request.Context(), traceID)
@@ -87,7 +82,8 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 					logger.L.Error("[Recovery from panic]",
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
-						zap.String("stack", string(debug.Stack())), // 返回调用它的goroutine的格式化堆栈跟踪。
+						// zap.String("stack", string(debug.Stack())), // 返回调用它的goroutine的格式化堆栈跟踪。
+						zap.Stack("stack"),
 					)
 				} else {
 					logger.L.Error("[Recovery from panic]",

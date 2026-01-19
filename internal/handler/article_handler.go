@@ -5,6 +5,7 @@ import (
 	"github.com/Olive1117/gin-blog/internal/service"
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/logger"
+	"github.com/Olive1117/gin-blog/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 	"github.com/spf13/cast"
@@ -52,7 +53,13 @@ func (a *articleHandler) Delete(c *gin.Context) {
 }
 func (a *articleHandler) Get(c *gin.Context) {
 	cx := c.Request.Context()
-	id := cast.ToInt64(c.Param("id"))
+	var id int64
+	param := c.Param("id")
+	if utils.IsShortID(param) {
+		id = utils.DecodeByOBID(param)
+	} else {
+		id = cast.ToInt64(param)
+	}
 	logger.FromContext(cx).Debug("获取文章", zap.Int64("id", id))
 
 	article, err := a.service.Get(cx, id)
