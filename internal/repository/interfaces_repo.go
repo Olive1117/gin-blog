@@ -21,8 +21,8 @@ type ArticleRepo interface {
 	FindAllArticle(c context.Context, page int, pageSize int, entity *model.Article) ([]model.Article, int64, error)
 	UpdateArticle(c context.Context, article *model.Article) error
 }
-type LoginRepo interface {
-	CheckLogin(c context.Context, username string, password string) (int64, error)
+type AuthRepo interface {
+	CheckAuth(c context.Context, username string, password string) (int64, error)
 }
 type TagRepo interface {
 	BaseRepo[model.Tag]

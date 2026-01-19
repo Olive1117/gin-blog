@@ -28,12 +28,6 @@ func (b *BaseModel) BeforeCreate(tx *gorm.DB) (err error) {
 
 type User struct {
 	BaseModel
-	// Account
-	Username string `json:"username" gorm:"size:50;uniqueIndex;not null"`
-	Password string `json:"-"`
-}
-type newUser struct {
-	BaseModel
 
 	// 账号核心
 	Username string `json:"username" gorm:"type:varchar(50);uniqueIndex;not null"` // 对应 screen_name
@@ -59,6 +53,7 @@ type newUser struct {
 	//TODO 最后上线时间
 	// LastLoginAt time.Time `json:"last_login_at"`
 }
+
 type Article struct {
 	BaseModel
 	Title   string `json:"title" gorm:"size:100;not null"`

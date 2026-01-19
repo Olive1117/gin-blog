@@ -17,8 +17,8 @@ func JwtAuth(j model.JWTHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		parse := strings.SplitN(c.GetHeader("Authorization"), " ", 2)
 		if !(parse[0] == "Bearer" && len(parse) == 2) {
-			logger.FromContext(c.Request.Context()).Warn(errs.ErrLoginCheckTokenFail.Message)
-			errs.Fail(c, errs.ErrLoginCheckTokenFail)
+			logger.FromContext(c.Request.Context()).Warn(errs.ErrAuthCheckTokenFail.Message)
+			errs.Fail(c, errs.ErrAuthCheckTokenFail)
 			c.Abort()
 			return
 		}
@@ -26,11 +26,11 @@ func JwtAuth(j model.JWTHandler) gin.HandlerFunc {
 		claims, err := j.ParseToken(parse[1])
 		if err != nil {
 			if errors.Is(err, jwt.ErrTokenExpired) {
-				logger.FromContext(c.Request.Context()).Warn(errs.ErrLoginCheckTokenTimeout.Message, zap.Error(err))
-				errs.Fail(c, errs.ErrLoginCheckTokenTimeout)
+				logger.FromContext(c.Request.Context()).Warn(errs.ErrAuthCheckTokenTimeout.Message, zap.Error(err))
+				errs.Fail(c, errs.ErrAuthCheckTokenTimeout)
 			} else {
-				logger.FromContext(c.Request.Context()).Warn(errs.ErrLoginCheckTokenFail.Message, zap.Error(err))
-				errs.Fail(c, errs.ErrLoginCheckTokenFail)
+				logger.FromContext(c.Request.Context()).Warn(errs.ErrAuthCheckTokenFail.Message, zap.Error(err))
+				errs.Fail(c, errs.ErrAuthCheckTokenFail)
 			}
 			c.Abort()
 			return

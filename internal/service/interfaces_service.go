@@ -13,8 +13,8 @@ type ArticleService interface {
 	List(c context.Context, page int, pageSize int, filter *model.Article) ([]model.Article, int64, error)
 	Update(c context.Context, article *model.Article) error
 }
-type LoginService interface {
-	Login(c context.Context, req *model.LoginRequest) (*model.LoginResponse, error)
+type AuthService interface {
+	Auth(c context.Context, req *model.AuthRequest) (*model.AuthResponse, error)
 }
 type CategoryService interface {
 	Create(c context.Context, category *model.Category) error

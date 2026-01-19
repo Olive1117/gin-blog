@@ -2,8 +2,8 @@ package model
 
 import "time"
 
-// LoginRequest 登录请求
-type LoginRequest struct {
+// AuthRequest 登录请求
+type AuthRequest struct {
 	// 使用 binding 标签进行初步参数校验
 	Username string `json:"username" binding:"required,min=1,max=32"`
 	Password string `json:"password" binding:"required,min=6,max=64"`
@@ -12,8 +12,8 @@ type LoginRequest struct {
 	CaptchaCode string `json:"captcha_code" binding:"omitempty"`
 }
 
-// LoginResponse 登录成功响应
-type LoginResponse struct {
+// AuthResponse 登录成功响应
+type AuthResponse struct {
 	AccessToken string    `json:"access_token"`
 	ExpiresAt   time.Time `json:"expires_at"` // 过期时间戳
 	TokenType   string    `json:"token_type"` // 默认 "Bearer"

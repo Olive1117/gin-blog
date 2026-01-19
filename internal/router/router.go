@@ -29,7 +29,7 @@ func InitRouter(router *gin.Engine, handlerContainer *handler.HandlerContainer, 
 				"data": "",
 			})
 		})
-		public.POST("/login", handlerContainer.Login.Login)
+		public.POST("/login", handlerContainer.Auth.Auth)
 	}
 	private := router.Group("/api/v1").Use(middlewareContainer.Jwt)
 	{

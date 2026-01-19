@@ -12,34 +12,34 @@ import (
 	"gorm.io/gorm"
 )
 
-type loginService struct {
-	Repo repository.LoginRepo
+type authService struct {
+	Repo repository.AuthRepo
 	jwt  model.JWTHandler
 }
 
-func NewLoginService(store repository.LoginRepo, jwt model.JWTHandler) LoginService {
-	return &loginService{
+func NewAuthService(store repository.AuthRepo, jwt model.JWTHandler) AuthService {
+	return &authService{
 		Repo: store,
 		jwt:  jwt,
 	}
 }
 
-func (l *loginService) Login(c context.Context, req *model.LoginRequest) (*model.LoginResponse, error) {
+func (l *authService) Auth(c context.Context, req *model.AuthRequest) (*model.AuthResponse, error) {
 	logger.FromContext(c).Debug("登录业务代码")
-	id, err := l.Repo.CheckLogin(c, req.Username, req.Password)
+	id, err := l.Repo.CheckAuth(c, req.Username, req.Password)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.FromContext(c).Warn(errs.ErrLogin.Message, zap.Error(err))
-			return nil, errs.ErrLogin
+			logger.FromContext(c).Warn(errs.ErrAuth.Message, zap.Error(err))
+			return nil, errs.ErrAuth
 		}
 		return nil, errs.Error
 	}
 	token, expiresAt, err := l.jwt.GenerateToken(id, req.Username)
 	if err != nil {
-		logger.FromContext(c).Warn(errs.ErrLoginToken.Message, zap.Error(err))
-		return nil, errs.ErrLoginToken
+		logger.FromContext(c).Warn(errs.ErrAuthToken.Message, zap.Error(err))
+		return nil, errs.ErrAuthToken
 	}
-	res := &model.LoginResponse{
+	res := &model.AuthResponse{
 		AccessToken: token,
 		ExpiresAt:   expiresAt,
 		TokenType:   "Bearer",

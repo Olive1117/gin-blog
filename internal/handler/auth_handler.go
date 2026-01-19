@@ -9,24 +9,24 @@ import (
 	"go.uber.org/zap"
 )
 
-type loginHandler struct {
-	Server service.LoginService
+type authHandler struct {
+	Server service.AuthService
 }
 
-func NewLoginHandler(store service.LoginService) LoginHandler {
-	return &loginHandler{Server: store}
+func NewAuthHandler(store service.AuthService) AuthHandler {
+	return &authHandler{Server: store}
 }
 
-func (l *loginHandler) Login(c *gin.Context) {
+func (l *authHandler) Auth(c *gin.Context) {
 	cx := c.Request.Context()
 	logger.FromContext(cx).Debug("登录")
-	var req model.LoginRequest
+	var req model.AuthRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		logger.FromContext(cx).Warn(errs.ErrInvalidParam.Message, zap.Error(err))
 		errs.Fail(c, errs.ErrInvalidParam)
 		return
 	}
-	res, err := l.Server.Login(cx, &req)
+	res, err := l.Server.Auth(cx, &req)
 	if err != nil {
 		logger.FromContext(cx).Warn("[Business Warning]", zap.Error(err))
 		errs.Fail(c, err)
