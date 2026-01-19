@@ -84,7 +84,7 @@ func (a *articleService) Get(c context.Context, id int64) (model.Article, error)
 	return a.Repo.FindById(c, id, "Category", "Tags")
 }
 
-func (a *articleService) Delete(c context.Context, id int64) (int, error) {
+func (a *articleService) Delete(c context.Context, id int64) error {
 	// 可以在这里增加删除后的逻辑（如清理 Redis）
 	return a.Repo.Delete(c, id)
 }

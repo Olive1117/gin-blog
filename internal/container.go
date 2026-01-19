@@ -15,7 +15,7 @@ func InitContainer(engine *gin.Engine, jwt model.JWTHandler, db *gorm.DB, tx mod
 	middlewareContainer := &middleware.MiddlewareContainer{
 		Jwt:         middleware.JwtAuth(jwt),
 		Logger:      middleware.GinLogger(),
-		GinRecovery: middleware.GinRecovery(false),
+		GinRecovery: middleware.GinRecovery(true),
 	}
 
 	articleRepo := repository.NewArticleRepo(db)

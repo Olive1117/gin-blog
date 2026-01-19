@@ -24,7 +24,7 @@ func (cs *categoryService) Create(ctx context.Context, category *model.Category)
 	}
 	return cs.Repo.Create(ctx, category)
 }
-func (cs *categoryService) Delete(ctx context.Context, id int64) (int, error) {
+func (cs *categoryService) Delete(ctx context.Context, id int64) error {
 	return cs.Repo.Delete(ctx, id)
 }
 func (cs *categoryService) Get(ctx context.Context, id int64) (model.Category, error) {

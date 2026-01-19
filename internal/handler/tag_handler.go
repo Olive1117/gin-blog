@@ -85,12 +85,12 @@ func (th *tagHandler) Delete(c *gin.Context) {
 	id := cast.ToInt64(c.Param("id"))
 	logger.FromContext(cx).Debug("删除标签", zap.Int64("标签ID", id))
 
-	rowsAffected, err := th.service.Delete(cx, id)
+	err := th.service.Delete(cx, id)
 	if err != nil {
 		errs.Fail(c, err)
 		return
 	}
-	errs.Success(c, gin.H{"rowsAffected": rowsAffected})
+	errs.Success(c, nil)
 }
 
 func (th *tagHandler) Update(c *gin.Context) {

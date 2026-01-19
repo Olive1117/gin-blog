@@ -27,6 +27,7 @@ type ArticleDTO struct {
 	State     *int8     `json:"state"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	ShortID   string    `json:"short_id" gorm:"-"`
 
 	CategoryName string `json:"category"`
 

@@ -43,12 +43,12 @@ func (a *articleHandler) Delete(c *gin.Context) {
 	cx := c.Request.Context()
 	id := cast.ToInt64(c.Param("id"))
 
-	rowsAffected, err := a.service.Delete(cx, id)
+	err := a.service.Delete(cx, id)
 	if err != nil {
 		errs.Fail(c, err)
 		return
 	}
-	errs.Success(c, gin.H{"rowsAffected": rowsAffected})
+	errs.Success(c, nil)
 }
 func (a *articleHandler) Get(c *gin.Context) {
 	cx := c.Request.Context()

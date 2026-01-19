@@ -100,10 +100,10 @@ func (ch *categoryHandler) Delete(c *gin.Context) {
 	cx := c.Request.Context()
 	id := cast.ToInt64(c.Param("id"))
 	logger.FromContext(cx).Debug("删除分类", zap.Int64("分类ID", id))
-	rowsAffected, err := ch.service.Delete(cx, id)
+	err := ch.service.Delete(cx, id)
 	if err != nil {
 		errs.Fail(c, err)
 		return
 	}
-	errs.Success(c, gin.H{"rows_affected": rowsAffected})
+	errs.Success(c, nil)
 }

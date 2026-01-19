@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/Olive1117/gin-blog/pkg/database"
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"go.uber.org/zap"
@@ -73,8 +74,18 @@ func (b *baseRepo[T]) Create(c context.Context, entity *T) error {
 }
 
 // Delete 删除结构体数据，返回删除的行数
-func (b *baseRepo[T]) Delete(c context.Context, id int64) (int, error) {
-	return gorm.G[T](b.Conn(c)).Where("id = ?", id).Delete(c)
+func (b *baseRepo[T]) Delete(c context.Context, id int64) error {
+	var model T
+	return b.Conn(c).Transaction(func(tx *gorm.DB) error {
+		userID, ok := database.GetUserID(c)
+		if ok {
+			if err := tx.Where("id = ?", id).Model(&model).Session(&gorm.Session{SkipHooks: true}).Update("deleted_by", userID).Error; err != nil {
+				logger.FromContext(c).Error("更新删除字段失败", zap.Error(err))
+				return err
+			}
+		}
+		return tx.Where("id = ?", id).Delete(&model).Error
+	})
 }
 
 // Update 更新结构体数据，复杂结构体请使用具体的Repo方法

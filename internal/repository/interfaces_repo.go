@@ -10,7 +10,7 @@ import (
 type BaseRepo[T any] interface {
 	Conn(c context.Context) *gorm.DB
 	Create(c context.Context, entity *T) error
-	Delete(c context.Context, id int64) (int, error)
+	Delete(c context.Context, id int64) error
 	FindAll(c context.Context, page int, pageSize int, entity *T, preloads ...string) ([]T, int64, error)
 	FindById(c context.Context, id int64, preloads ...string) (T, error)
 	Update(c context.Context, id int64, data any) error

@@ -3,18 +3,27 @@ package model
 import (
 	"time"
 
+	"github.com/Olive1117/gin-blog/pkg/idgen"
+	"github.com/Olive1117/gin-blog/pkg/utils"
 	"gorm.io/gorm"
 )
 
 type BaseModel struct {
 	gorm.Model
-	ID        int64          `gorm:"primaryKey" json:"id,string"`
+	ID        int64          `gorm:"primaryKey;autoIncrement:false" json:"id,string"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 	CreatedBy int64          `gorm:"column:created_by;default:NULL"`
 	UpdatedBy int64          `gorm:"column:updated_by;default:NULL"`
 	DeletedBy int64          `gorm:"column:deleted_by;default:NULL"`
+}
+
+func (b *BaseModel) BeforeCreate(tx *gorm.DB) (err error) {
+	if b.ID == 0 {
+		b.ID = idgen.NextID()
+	}
+	return
 }
 
 type User struct {
@@ -57,6 +66,7 @@ type Article struct {
 	Desc    string `json:"desc" gorm:"size:255"`
 	Content string `json:"content" gorm:"type:text"`
 	State   *int8  `json:"state" gorm:"default:1"`
+	ShortID string `json:"short_id" gorm:"-"`
 
 	CategoryID int64    `json:"category_id" gorm:"index"`
 	Category   Category `json:"category" gorm:"foreignKey:CategoryID"`
@@ -64,6 +74,10 @@ type Article struct {
 	Tags []Tag `json:"tags" gorm:"many2many:article_tag;"`
 }
 
+func (a *Article) AfterFind(tx *gorm.DB) (err error) {
+	a.ShortID = utils.EncodeByOBID(a.ID)
+	return
+}
 func (a *Article) CategoryName(categoryName string) {
 	a.Category = Category{Name: categoryName}
 }

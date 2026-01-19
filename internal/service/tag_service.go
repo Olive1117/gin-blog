@@ -24,7 +24,7 @@ func (ts *tagService) Create(c context.Context, tag *model.Tag) error {
 	}
 	return ts.Repo.Create(c, tag)
 }
-func (ts *tagService) Delete(c context.Context, id int64) (int, error) {
+func (ts *tagService) Delete(c context.Context, id int64) error {
 	return ts.Repo.Delete(c, id)
 }
 func (ts *tagService) Get(c context.Context, id int64) (model.Tag, error) {

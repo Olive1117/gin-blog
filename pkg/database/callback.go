@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"go.uber.org/zap"
@@ -30,6 +31,9 @@ func (op *AuditPlugin) Initialize(db *gorm.DB) error {
 }
 
 func (op *AuditPlugin) beforeCreate(db *gorm.DB) {
+	if db.Statement.Schema == nil {
+		return
+	}
 	id, ok := db.Statement.Context.Value(kUserID).(int64)
 	if !ok {
 		logger.L.Error("获取用户ID失败")
@@ -37,23 +41,58 @@ func (op *AuditPlugin) beforeCreate(db *gorm.DB) {
 	}
 	logger.L.Debug("执行创建插件", zap.Int64("当前用户", id))
 	// 设置 CreatedBy 和 UpdatedBy
-	if field := db.Statement.Schema.LookUpField("CreatedBy"); field != nil {
-		db.Statement.SetColumn("CreatedBy", id)
-	}
-	if field := db.Statement.Schema.LookUpField("UpdatedBy"); field != nil {
-		db.Statement.SetColumn("UpdatedBy", id)
+	createdBy := db.Statement.Schema.LookUpField("CreatedBy")
+	updatedBy := db.Statement.Schema.LookUpField("UpdatedBy")
+	switch db.Statement.ReflectValue.Kind() {
+	case reflect.Slice, reflect.Array:
+		// 批量创建：必须循环处理每一行
+		for i := 0; i < db.Statement.ReflectValue.Len(); i++ {
+			rv := reflect.Indirect(db.Statement.ReflectValue.Index(i))
+			if createdBy != nil {
+				createdBy.Set(db.Statement.Context, rv, id)
+			}
+			if updatedBy != nil {
+				updatedBy.Set(db.Statement.Context, rv, id)
+			}
+		}
+	case reflect.Struct:
+		// 单条创建
+		rv := db.Statement.ReflectValue
+		if createdBy != nil {
+			createdBy.Set(db.Statement.Context, rv, id)
+		}
+		if updatedBy != nil {
+			updatedBy.Set(db.Statement.Context, rv, id)
+		}
 	}
 }
 
 func (op *AuditPlugin) beforeUpdate(db *gorm.DB) {
+	if db.Statement.Schema == nil {
+		return
+	}
 	id, ok := db.Statement.Context.Value(kUserID).(int64)
 	if !ok {
 		logger.L.Error("获取用户ID失败")
 		return
 	}
 	logger.L.Debug("执行更新插件", zap.Int64("id", id))
-	if field := db.Statement.Schema.LookUpField("UpdatedBy"); field != nil {
-		db.Statement.SetColumn("UpdatedBy", id)
+	updatedBy := db.Statement.Schema.LookUpField("UpdatedBy")
+	switch db.Statement.ReflectValue.Kind() {
+	case reflect.Slice, reflect.Array:
+		// 批量创建：必须循环处理每一行
+		for i := 0; i < db.Statement.ReflectValue.Len(); i++ {
+			rv := reflect.Indirect(db.Statement.ReflectValue.Index(i))
+			if updatedBy != nil {
+				updatedBy.Set(db.Statement.Context, rv, id)
+			}
+		}
+	case reflect.Struct:
+		// 单条创建
+		rv := db.Statement.ReflectValue
+		if updatedBy != nil {
+			updatedBy.Set(db.Statement.Context, rv, id)
+		}
 	}
 }
 
@@ -77,4 +116,11 @@ var kUserID = userIDKey{}
 
 func SetUserID(ctx context.Context, id int64) context.Context {
 	return context.WithValue(ctx, kUserID, id)
+}
+func GetUserID(ctx context.Context) (int64, bool) {
+	id, ok := ctx.Value(kUserID).(int64)
+	if ok {
+		return id, true
+	}
+	return 0, false
 }
