@@ -87,9 +87,8 @@ func (ch *categoryHandler) Update(c *gin.Context) {
 		errs.Fail(c, errs.ErrInvalidParam)
 		return
 	}
-	category.ID = id
 	logger.FromContext(cx).Debug("更新分类", zap.Any("分类", category))
-	if err := ch.service.Update(cx, &category); err != nil {
+	if err := ch.service.Update(cx, &category, id); err != nil {
 		errs.Fail(c, err)
 		return
 	}

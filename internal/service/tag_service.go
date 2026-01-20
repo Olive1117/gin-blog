@@ -19,7 +19,7 @@ func NewTagService(repo repository.TagRepo) TagService {
 }
 
 func (ts *tagService) Create(c context.Context, tag *model.Tag) error {
-	if ok, err := ts.Repo.ExistByName(c, tag.Name); err != nil || ok {
+	if id, err := ts.Repo.ExistByName(c, tag.Name); err != nil || id != 0 {
 		return errs.ErrExistTag
 	}
 	return ts.Repo.Create(c, tag)
@@ -34,9 +34,14 @@ func (ts *tagService) List(c context.Context, page int, pageSize int, filter *mo
 	//TODO 这里应该写模糊查询，需要改baseRepo
 	return ts.Repo.FindAll(c, page, pageSize, filter)
 }
-func (ts *tagService) Update(c context.Context, tag *model.Tag) error {
-	if ok, err := ts.Repo.ExistByName(c, tag.Name); err != nil || ok {
+func (ts *tagService) Update(c context.Context, tag *model.Tag, id int64) error {
+	existId, err := ts.Repo.ExistByName(c, tag.Name)
+	if err != nil {
+		return err
+	}
+	// 如果name存在，而且不是用户自己的，爆冲突警告
+	if existId != 0 && existId != id {
 		return errs.ErrExistTag
 	}
-	return ts.Repo.Update(c, tag.ID, tag)
+	return ts.Repo.Update(c, id, tag)
 }

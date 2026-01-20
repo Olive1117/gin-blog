@@ -85,8 +85,7 @@ func (th *tagHandler) Delete(c *gin.Context) {
 	id := cast.ToInt64(c.Param("id"))
 	logger.FromContext(cx).Debug("删除标签", zap.Int64("标签ID", id))
 
-	err := th.service.Delete(cx, id)
-	if err != nil {
+	if err := th.service.Delete(cx, id); err != nil {
 		errs.Fail(c, err)
 		return
 	}
@@ -101,9 +100,8 @@ func (th *tagHandler) Update(c *gin.Context) {
 		errs.Fail(c, errs.ErrInvalidParam)
 		return
 	}
-	tag.ID = id
 	logger.FromContext(cx).Debug("更新标签", zap.Any("标签", tag))
-	if err := th.service.Update(cx, &tag); err != nil {
+	if err := th.service.Update(cx, &tag, id); err != nil {
 		errs.Fail(c, err)
 		return
 	}

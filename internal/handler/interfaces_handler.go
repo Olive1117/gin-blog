@@ -7,28 +7,28 @@ type HandlerContainer struct {
 	Article  ArticleHandler
 	Category CategoryHandler
 	Tag      TagHandler
+	User     UserHandler
 }
-type ArticleHandler interface {
-	Create(c *gin.Context)
-	Delete(c *gin.Context)
+type BaseHandler interface {
 	Get(c *gin.Context)
 	List(c *gin.Context)
+	Create(c *gin.Context)
 	Update(c *gin.Context)
+	Delete(c *gin.Context)
+}
+type ArticleHandler interface {
+	BaseHandler
 }
 type AuthHandler interface {
 	Auth(c *gin.Context)
 }
 type CategoryHandler interface {
-	Create(c *gin.Context)
-	Delete(c *gin.Context)
-	Get(c *gin.Context)
-	List(c *gin.Context)
-	Update(c *gin.Context)
+	BaseHandler
 }
 type TagHandler interface {
-	Create(c *gin.Context)
-	Delete(c *gin.Context)
-	Get(c *gin.Context)
-	List(c *gin.Context)
-	Update(c *gin.Context)
+	BaseHandler
+}
+type UserHandler interface {
+	BaseHandler
+	GetMe(c *gin.Context)
 }

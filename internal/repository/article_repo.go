@@ -58,9 +58,9 @@ func (r *articleRepo) FindAllArticle(c context.Context, page, pageSize int, enti
 	}
 	return articles, tatol, nil
 }
-func (r *articleRepo) UpdateArticle(c context.Context, article *model.Article) error {
+func (r *articleRepo) UpdateArticle(c context.Context, article *model.Article, id int64) error {
 	return r.Conn(c).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Omit("Tags", "Category").Where("id = ?", article.ID).Updates(article).Error; err != nil {
+		if err := tx.Omit("Tags", "Category").Where("id = ?", id).Updates(article).Error; err != nil {
 			return err
 		}
 		return tx.Model(article).Omit("Tags.*").Association("Tags").Replace(article.Tags)

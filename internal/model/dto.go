@@ -62,3 +62,43 @@ type TagDTO struct {
 	Name  string `json:"name"`
 	State *int8  `json:"state"`
 }
+
+type UserDTO struct {
+	// 账号核心
+	ID       int64  `json:"id,string"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+
+	// 基本资料
+	Nickname  string `json:"nickname"`
+	Avatar    string `json:"avatar"`
+	Banner    string `json:"banner"`
+	Bio       string `json:"bio"`
+	Location  string `json:"location"`
+	Website   string `json:"website"`
+	Birthdate string `json:"birthdate"`
+
+	// 统计数据 (如果你想学推特做缓存计数)
+	PostCount   int `json:"post_count"`
+	FriendCount int `json:"friend_count"`
+	// 权限控制
+	Role  string `json:"role"`
+	State *int8  `json:"state"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+type RegisterRequest struct {
+	// 账号核心
+	Username string `json:"username" binding:"required,min=4,max=32"`
+	Email    string `json:"email" binding:"omitempty,email"`
+	Password string `json:"password" binding:"required,min=8,max=64"`
+	// 基本资料
+	Nickname  string `json:"nickname"`
+	Avatar    string `json:"avatar"`
+	Banner    string `json:"banner"`
+	Bio       string `json:"bio"`
+	Location  string `json:"location"`
+	Website   string `json:"website"`
+	Birthdate string `json:"birthdate"`
+}

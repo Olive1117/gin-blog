@@ -48,8 +48,8 @@ type User struct {
 	FriendCount int `json:"friend_count" gorm:"default:0"` // 关注了多少人
 
 	// 权限控制
-	Role   string `json:"role" gorm:"type:varchar(20);default:'user'"`
-	Status *int8  `json:"status" gorm:"type:tinyint;default:1"`
+	Role  string `json:"role" gorm:"type:varchar(20);default:'user'"`
+	State *int8  `json:"state" gorm:"type:tinyint;default:1"`
 	//TODO 最后上线时间
 	// LastLoginAt time.Time `json:"last_login_at"`
 }

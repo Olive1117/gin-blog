@@ -20,6 +20,7 @@ func InitRouter(router *gin.Engine, handlerContainer *handler.HandlerContainer, 
 		panic("测试：这是一个模拟的崩溃")
 	})
 	router.Use(middlewareContainer.Logger)
+
 	public := router.Group("/api/v1")
 	{
 		public.GET("/test1", func(ctx *gin.Context) {
@@ -31,7 +32,9 @@ func InitRouter(router *gin.Engine, handlerContainer *handler.HandlerContainer, 
 		})
 		public.POST("/login", handlerContainer.Auth.Auth)
 	}
-	private := router.Group("/api/v1").Use(middlewareContainer.Jwt)
+
+	private := router.Group("/api/v1")
+	private.Use(middlewareContainer.Jwt)
 	{
 		private.GET("/test2", func(ctx *gin.Context) {
 			ctx.JSON(200, gin.H{
@@ -40,22 +43,41 @@ func InitRouter(router *gin.Engine, handlerContainer *handler.HandlerContainer, 
 				"data": "",
 			})
 		})
-		private.GET("/article/:id", handlerContainer.Article.Get)
-		private.POST("/article", handlerContainer.Article.Create)
-		private.DELETE("/article/:id", handlerContainer.Article.Delete)
-		private.PUT("/article/:id", handlerContainer.Article.Update)
-		private.GET("/articles", handlerContainer.Article.List)
+		articles := private.Group("/articles")
+		{
+			articles.GET("", handlerContainer.Article.List)
+			articles.POST("", handlerContainer.Article.Create)
+			articles.GET("/:id", handlerContainer.Article.Get)
+			articles.PUT("/:id", handlerContainer.Article.Update)
+			articles.DELETE("/:id", handlerContainer.Article.Delete)
+		}
 
-		private.POST("/category", handlerContainer.Category.Create)
-		private.DELETE("/category/:id", handlerContainer.Category.Delete)
-		private.PUT("/category/:id", handlerContainer.Category.Update)
-		private.GET("/category/:id", handlerContainer.Category.Get)
-		private.GET("/categories", handlerContainer.Category.List)
+		categories := private.Group("/categories")
+		{
+			categories.POST("", handlerContainer.Category.Create)
+			categories.DELETE("/:id", handlerContainer.Category.Delete)
+			categories.PUT("/:id", handlerContainer.Category.Update)
+			categories.GET("/:id", handlerContainer.Category.Get)
+			categories.GET("", handlerContainer.Category.List)
+		}
 
-		private.POST("/tag", handlerContainer.Tag.Create)
-		private.DELETE("/tag/:id", handlerContainer.Tag.Delete)
-		private.PUT("/tag/:id", handlerContainer.Tag.Update)
-		private.GET("/tag/:id", handlerContainer.Tag.Get)
-		private.GET("/tags", handlerContainer.Tag.List)
+		tags := private.Group("/tags")
+		{
+			tags.POST("", handlerContainer.Tag.Create)
+			tags.DELETE("/:id", handlerContainer.Tag.Delete)
+			tags.PUT("/:id", handlerContainer.Tag.Update)
+			tags.GET("/:id", handlerContainer.Tag.Get)
+			tags.GET("", handlerContainer.Tag.List)
+		}
+
+		users := private.Group("/users")
+		{
+			users.POST("", handlerContainer.User.Create)
+			users.DELETE("/:id", handlerContainer.User.Delete)
+			users.PUT("/:id", handlerContainer.User.Update)
+			users.GET("/:id", handlerContainer.User.Get)
+			users.GET("", handlerContainer.User.List)
+			users.GET("/me", handlerContainer.User.GetMe)
+		}
 	}
 }

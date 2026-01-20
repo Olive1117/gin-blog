@@ -2,14 +2,12 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/Olive1117/gin-blog/internal/model"
 	"github.com/Olive1117/gin-blog/internal/repository"
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type authService struct {
@@ -28,11 +26,7 @@ func (l *authService) Auth(c context.Context, req *model.AuthRequest) (*model.Au
 	logger.FromContext(c).Debug("登录业务代码")
 	id, err := l.Repo.CheckAuth(c, req.Username, req.Password)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.FromContext(c).Warn(errs.ErrAuth.Message, zap.Error(err))
-			return nil, errs.ErrAuth
-		}
-		return nil, errs.Error
+		return nil, err
 	}
 	token, expiresAt, err := l.jwt.GenerateToken(id, req.Username)
 	if err != nil {

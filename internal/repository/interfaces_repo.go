@@ -19,7 +19,7 @@ type ArticleRepo interface {
 	BaseRepo[model.Article]
 	CreateArticle(c context.Context, article *model.Article) error
 	FindAllArticle(c context.Context, page int, pageSize int, entity *model.Article) ([]model.Article, int64, error)
-	UpdateArticle(c context.Context, article *model.Article) error
+	UpdateArticle(c context.Context, article *model.Article, id int64) error
 }
 type AuthRepo interface {
 	CheckAuth(c context.Context, username string, password string) (int64, error)
@@ -27,10 +27,14 @@ type AuthRepo interface {
 type TagRepo interface {
 	BaseRepo[model.Tag]
 	SyncTags(ctx context.Context, names []string) ([]model.Tag, error)
-	ExistByName(ctx context.Context, name string) (bool, error)
+	ExistByName(ctx context.Context, name string) (int64, error)
 }
 type CategoryRepo interface {
 	BaseRepo[model.Category]
 	SyncCategory(ctx context.Context, name string) (*model.Category, error)
-	ExistByName(ctx context.Context, name string) (bool, error)
+	ExistByName(ctx context.Context, name string) (int64, error)
+}
+type UserRepo interface {
+	BaseRepo[model.User]
+	FindByUniqueKeys(ctx context.Context, username string, email string) ([]model.User, error)
 }

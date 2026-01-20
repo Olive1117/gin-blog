@@ -86,9 +86,8 @@ func (a *articleHandler) Update(c *gin.Context) {
 	}
 	logger.FromContext(cx).Debug("更新文章", zap.Int64("id", id), zap.Any("文章", articleDTO))
 	copier.CopyWithOption(&article, &articleDTO, copier.Option{IgnoreEmpty: true})
-	article.ID = id
 
-	if err := a.service.Update(cx, &article); err != nil {
+	if err := a.service.Update(cx, &article, id); err != nil {
 		errs.Fail(c, err)
 		return
 	}

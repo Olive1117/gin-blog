@@ -86,7 +86,7 @@ CREATE TABLE `blog_user` (
   `post_count` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '文章数量',
   `friend_count` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '好友数量',
   `role` varchar(20)  NOT NULL DEFAULT 'user' COMMENT '权限',
-  `status` tinyint(3) unsigned NOT NULL DEFAULT '1' COMMENT '状态: 1-正常 2-冻结',
+  `state` tinyint(3) unsigned NOT NULL DEFAULT '1' COMMENT '状态: 1-正常 2-冻结',
   UNIQUE KEY `idx_username_unique` (`username`, `deleted_at`),
   INDEX `idx_blog_login_deleted_at` (`deleted_at`),
   PRIMARY KEY (`id`)

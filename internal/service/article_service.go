@@ -25,7 +25,7 @@ func NewArticleService(repo repository.ArticleRepo, ts model.TransactionManager,
 	}
 }
 
-func (a *articleService) Update(c context.Context, article *model.Article) error {
+func (a *articleService) Update(c context.Context, article *model.Article, id int64) error {
 	return a.Ts.Transaction(c, func(c context.Context) error {
 		category, err := a.CategoryRepo.SyncCategory(c, article.Category.Name)
 		if err != nil {
@@ -43,7 +43,7 @@ func (a *articleService) Update(c context.Context, article *model.Article) error
 		article.Category = *category
 		article.Tags = tags
 		logger.FromContext(c).Debug("更新文章业务", zap.Any("文章", article))
-		return a.Repo.UpdateArticle(c, article)
+		return a.Repo.UpdateArticle(c, article, id)
 	})
 }
 

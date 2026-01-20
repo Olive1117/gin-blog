@@ -19,7 +19,7 @@ func NewCategoryService(repo repository.CategoryRepo) CategoryService {
 }
 
 func (cs *categoryService) Create(ctx context.Context, category *model.Category) error {
-	if ok, err := cs.Repo.ExistByName(ctx, category.Name); err != nil || ok {
+	if id, err := cs.Repo.ExistByName(ctx, category.Name); err != nil || id != 0 {
 		return errs.ErrExistCategory
 	}
 	return cs.Repo.Create(ctx, category)
@@ -34,9 +34,14 @@ func (cs *categoryService) List(ctx context.Context, page int, pageSize int, fil
 	//TODO 这里应该写模糊查询，需要改baseRepo
 	return cs.Repo.FindAll(ctx, page, pageSize, filter)
 }
-func (cs *categoryService) Update(ctx context.Context, category *model.Category) error {
-	if ok, err := cs.Repo.ExistByName(ctx, category.Name); err != nil || ok {
+func (cs *categoryService) Update(ctx context.Context, category *model.Category, id int64) error {
+	existId, err := cs.Repo.ExistByName(ctx, category.Name)
+	if err != nil {
+		return err
+	}
+	// 如果name存在，而且不是用户自己的，爆冲突警告
+	if existId != 0 && existId != id {
 		return errs.ErrExistCategory
 	}
-	return cs.Repo.Update(ctx, category.ID, category)
+	return cs.Repo.Update(ctx, id, category)
 }

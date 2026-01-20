@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Olive1117/gin-blog/internal/model"
 	"gorm.io/gorm"
@@ -24,8 +25,14 @@ func (r *categoryRepo) SyncCategory(ctx context.Context, name string) (*model.Ca
 	return category, err
 }
 
-func (r *categoryRepo) ExistByName(ctx context.Context, name string) (bool, error) {
-	var count int64
-	err := r.Conn(ctx).Model(&model.Category{}).Where("name = ?", name).Count(&count).Error
-	return count > 0, err
+func (r *categoryRepo) ExistByName(ctx context.Context, name string) (int64, error) {
+	var category model.Category
+	err := r.Conn(ctx).Select("id").Where("name = ?", name).First(&category).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return 0, nil // 表示不存在
+		}
+		return 0, err // 表示数据库报错
+	}
+	return category.ID, nil
 }
