@@ -20,6 +20,7 @@ type ArticleRepo interface {
 	CreateArticle(c context.Context, article *model.Article) error
 	FindAllArticle(c context.Context, page int, pageSize int, entity *model.Article) ([]model.Article, int64, error)
 	UpdateArticle(c context.Context, article *model.Article, id int64) error
+	CountArticleByUserID(c context.Context, userID int64) (int64, error)
 }
 type AuthRepo interface {
 	CheckAuth(c context.Context, username string, password string) (int64, error)

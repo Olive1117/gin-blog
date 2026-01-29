@@ -66,3 +66,11 @@ func (r *articleRepo) UpdateArticle(c context.Context, article *model.Article, i
 		return tx.Model(article).Omit("Tags.*").Association("Tags").Replace(article.Tags)
 	})
 }
+
+func (r *articleRepo) CountArticleByUserID(c context.Context, userID int64) (int64, error) {
+	var count int64
+	if err := r.Conn(c).Model(&model.Article{}).Where("created_by = ?", userID).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}

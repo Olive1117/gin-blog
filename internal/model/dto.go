@@ -48,7 +48,7 @@ func (dto *ArticleDTO) Tags(tags []Tag) {
 type ArticleQuery struct {
 	Title        string   `form:"title"`
 	CategoryName string   `form:"category"`
-	TagNames     []string `form:"tag"`
+	TagNames     []string `form:"tags"`
 	State        *int8    `form:"state"`
 }
 

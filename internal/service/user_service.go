@@ -6,15 +6,18 @@ import (
 	"github.com/Olive1117/gin-blog/internal/model"
 	"github.com/Olive1117/gin-blog/internal/repository"
 	"github.com/Olive1117/gin-blog/pkg/errs"
+	"github.com/spf13/cast"
 )
 
 type userService struct {
-	Repo repository.UserRepo
+	Repo        repository.UserRepo
+	ArticleRepo repository.ArticleRepo
 }
 
-func NewUserService(repo repository.UserRepo) UserService {
+func NewUserService(repo repository.UserRepo, articleRepo repository.ArticleRepo) UserService {
 	return &userService{
-		Repo: repo,
+		Repo:        repo,
+		ArticleRepo: articleRepo,
 	}
 }
 
@@ -37,7 +40,16 @@ func (ts *userService) Delete(c context.Context, id int64) error {
 	return ts.Repo.Delete(c, id)
 }
 func (ts *userService) Get(c context.Context, id int64) (model.User, error) {
-	return ts.Repo.FindById(c, id)
+	user, err := ts.Repo.FindById(c, id)
+	if err != nil {
+		return model.User{}, err
+	}
+	postCount, err := ts.ArticleRepo.CountArticleByUserID(c, id)
+	if err != nil {
+		return model.User{}, err
+	}
+	user.PostCount = cast.ToInt(postCount)
+	return user, nil
 }
 func (ts *userService) List(c context.Context, page int, pageSize int, filter *model.User) ([]model.User, int64, error) {
 	return ts.Repo.FindAll(c, page, pageSize, filter)

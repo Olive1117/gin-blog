@@ -42,7 +42,13 @@ func (a *articleHandler) Create(c *gin.Context) {
 }
 func (a *articleHandler) Delete(c *gin.Context) {
 	cx := c.Request.Context()
-	id := cast.ToInt64(c.Param("id"))
+	var id int64
+	param := c.Param("id")
+	if utils.IsShortID(param) {
+		id = utils.DecodeByOBID(param)
+	} else {
+		id = cast.ToInt64(param)
+	}
 
 	err := a.service.Delete(cx, id)
 	if err != nil {

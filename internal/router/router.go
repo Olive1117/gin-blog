@@ -31,6 +31,21 @@ func InitRouter(router *gin.Engine, handlerContainer *handler.HandlerContainer, 
 			})
 		})
 		public.POST("/login", handlerContainer.Auth.Auth)
+		articles := public.Group("/articles")
+		{
+			articles.GET("", handlerContainer.Article.List)
+			articles.GET("/:id", handlerContainer.Article.Get)
+		}
+		categories := public.Group("/categories")
+		{
+			categories.GET("/:id", handlerContainer.Category.Get)
+			categories.GET("", handlerContainer.Category.List)
+		}
+		tags := public.Group("/tags")
+		{
+			tags.GET("/:id", handlerContainer.Tag.Get)
+			tags.GET("", handlerContainer.Tag.List)
+		}
 	}
 
 	private := router.Group("/api/v1")
@@ -45,9 +60,9 @@ func InitRouter(router *gin.Engine, handlerContainer *handler.HandlerContainer, 
 		})
 		articles := private.Group("/articles")
 		{
-			articles.GET("", handlerContainer.Article.List)
+			// articles.GET("", handlerContainer.Article.List)
 			articles.POST("", handlerContainer.Article.Create)
-			articles.GET("/:id", handlerContainer.Article.Get)
+			// articles.GET("/:id", handlerContainer.Article.Get)
 			articles.PUT("/:id", handlerContainer.Article.Update)
 			articles.DELETE("/:id", handlerContainer.Article.Delete)
 		}
@@ -57,8 +72,8 @@ func InitRouter(router *gin.Engine, handlerContainer *handler.HandlerContainer, 
 			categories.POST("", handlerContainer.Category.Create)
 			categories.DELETE("/:id", handlerContainer.Category.Delete)
 			categories.PUT("/:id", handlerContainer.Category.Update)
-			categories.GET("/:id", handlerContainer.Category.Get)
-			categories.GET("", handlerContainer.Category.List)
+			// categories.GET("/:id", handlerContainer.Category.Get)
+			// categories.GET("", handlerContainer.Category.List)
 		}
 
 		tags := private.Group("/tags")
@@ -66,8 +81,8 @@ func InitRouter(router *gin.Engine, handlerContainer *handler.HandlerContainer, 
 			tags.POST("", handlerContainer.Tag.Create)
 			tags.DELETE("/:id", handlerContainer.Tag.Delete)
 			tags.PUT("/:id", handlerContainer.Tag.Update)
-			tags.GET("/:id", handlerContainer.Tag.Get)
-			tags.GET("", handlerContainer.Tag.List)
+			// tags.GET("/:id", handlerContainer.Tag.Get)
+			// tags.GET("", handlerContainer.Tag.List)
 		}
 
 		users := private.Group("/users")
