@@ -39,6 +39,7 @@ func (a *articleService) Update(c context.Context, article *model.Article, id in
 		if err != nil {
 			return err
 		}
+		article.ID = id
 		article.CategoryID = category.ID
 		article.Category = *category
 		article.Tags = tags

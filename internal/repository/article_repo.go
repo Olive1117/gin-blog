@@ -52,6 +52,7 @@ func (r *articleRepo) FindAllArticle(c context.Context, page, pageSize int, enti
 	offset := (page - 1) * pageSize
 	if err := db.Preload("Category").Preload("Tags").
 		Omit("Content").
+		Order("created_at DESC").
 		Offset(offset).Limit(pageSize).
 		Find(&articles).Error; err != nil {
 		return nil, 0, err

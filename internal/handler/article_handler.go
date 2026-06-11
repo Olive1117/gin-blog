@@ -84,6 +84,7 @@ func (a *articleHandler) Update(c *gin.Context) {
 		article    model.Article
 	)
 	id := cast.ToInt64(c.Param("id"))
+	logger.FromContext(cx).Debug("文章id", zap.Int64("id", id))
 	err := c.ShouldBindJSON(&articleDTO)
 	if err != nil {
 		logger.FromContext(cx).Warn("参数错误", zap.Error(err))

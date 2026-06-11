@@ -37,7 +37,7 @@ func (b *baseRepo[T]) FindAll(c context.Context, page, pageSize int, entity *T, 
 	}
 	var entities []T
 	offset := (page - 1) * pageSize
-	err := db.Offset(offset).Limit(pageSize).Find(&entities).Error
+	err := db.Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&entities).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.FromContext(c).Warn("记录未找到")
