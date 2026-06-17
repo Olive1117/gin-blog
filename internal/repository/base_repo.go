@@ -79,7 +79,7 @@ func (b *baseRepo[T]) Delete(c context.Context, id int64) error {
 	return b.Conn(c).Transaction(func(tx *gorm.DB) error {
 		userID, ok := database.GetUserID(c)
 		if ok {
-			if err := tx.Where("id = ?", id).Model(&model).Session(&gorm.Session{SkipHooks: true}).Update("deleted_by", userID).Error; err != nil {
+			if err := tx.Model(&model).Where("id = ?", id).UpdateColumn("deleted_by", userID).Error; err != nil {
 				logger.FromContext(c).Error("更新删除字段失败", zap.Error(err))
 				return err
 			}

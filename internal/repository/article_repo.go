@@ -59,9 +59,9 @@ func (r *articleRepo) FindAllArticle(c context.Context, page, pageSize int, enti
 	}
 	return articles, tatol, nil
 }
-func (r *articleRepo) UpdateArticle(c context.Context, article *model.Article, id int64) error {
+func (r *articleRepo) UpdateArticle(c context.Context, article *model.Article) error {
 	return r.Conn(c).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Omit("Tags", "Category").Where("id = ?", id).Updates(article).Error; err != nil {
+		if err := tx.Omit("Tags", "Category").Where("id = ?", article.ID).Updates(article).Error; err != nil {
 			return err
 		}
 		return tx.Model(article).Omit("Tags.*").Association("Tags").Replace(article.Tags)
@@ -74,4 +74,28 @@ func (r *articleRepo) CountArticleByUserID(c context.Context, userID int64) (int
 		return 0, err
 	}
 	return count, nil
+}
+
+func (r *articleRepo) CountArticleByCategoryID(c context.Context, categoryID int64) (int64, error) {
+	var count int64
+	if err := r.Conn(c).Model(&model.Article{}).Where("category_id = ?", categoryID).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (r *articleRepo) CountArticleByTagIDs(c context.Context, tagIDs []int64) (map[int64]int64, error) {
+	type result struct {
+		TagID int64
+		Count int64
+	}
+	var rows []result
+	if err := r.Conn(c).Raw("SELECT tag_id, COUNT(*) as count FROM blog_article_tag WHERE tag_id IN ? GROUP BY tag_id", tagIDs).Scan(&rows).Error; err != nil {
+		return nil, err
+	}
+	counts := make(map[int64]int64, len(rows))
+	for _, r := range rows {
+		counts[r.TagID] = r.Count
+	}
+	return counts, nil
 }

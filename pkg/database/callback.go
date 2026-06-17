@@ -21,8 +21,8 @@ func (op *AuditPlugin) Initialize(db *gorm.DB) error {
 	err = db.Callback().Create().Before("gorm:create").Register("audit:before_create", op.beforeCreate)
 	// 注册更新钩子
 	err = db.Callback().Update().Before("gorm:update").Register("audit:before_update", op.beforeUpdate)
-	// 注册删除钩子（针对软删除）
-	err = db.Callback().Delete().Before("gorm:delete").Register("audit:before_delete", op.beforeDelete)
+	// 注册删除钩子（gorm软删除有他妈bug，气死我了）
+	// err = db.Callback().Delete().Before("gorm:delete").Register("audit:before_delete", op.beforeDelete)
 	if err != nil {
 		logger.L.Error("grom callback", zap.Error(err))
 		return err
@@ -97,6 +97,9 @@ func (op *AuditPlugin) beforeUpdate(db *gorm.DB) {
 }
 
 func (op *AuditPlugin) beforeDelete(db *gorm.DB) {
+	if db.Statement.Schema == nil {
+		return
+	}
 	id, ok := db.Statement.Context.Value(kUserID).(int64)
 	if !ok {
 		logger.L.Error("获取用户ID失败")
@@ -104,9 +107,26 @@ func (op *AuditPlugin) beforeDelete(db *gorm.DB) {
 	}
 	logger.L.Debug("执行删除插件", zap.Int64("id", id))
 	// 逻辑删除本质是更新，手动设置字段
-	if field := db.Statement.Schema.LookUpField("DeletedBy"); field != nil {
-		logger.L.Debug("删除！")
-		db.Statement.SetColumn("DeletedBy", id)
+	// if field := db.Statement.Schema.LookUpField("DeletedBy"); field != nil {
+	// 	logger.L.Debug("删除！")
+	// 	db.Statement.SetColumn("DeletedBy", id)
+	// }
+	deletedBy := db.Statement.Schema.LookUpField("DeletedBy")
+	switch db.Statement.ReflectValue.Kind() {
+	case reflect.Slice, reflect.Array:
+		// 批量删除：必须循环处理每一行
+		for i := 0; i < db.Statement.ReflectValue.Len(); i++ {
+			rv := reflect.Indirect(db.Statement.ReflectValue.Index(i))
+			if deletedBy != nil {
+				deletedBy.Set(db.Statement.Context, rv, id)
+			}
+		}
+	case reflect.Struct:
+		// 单条删除
+		rv := db.Statement.ReflectValue
+		if deletedBy != nil {
+			deletedBy.Set(db.Statement.Context, rv, id)
+		}
 	}
 }
 
