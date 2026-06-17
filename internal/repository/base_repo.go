@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Olive1117/gin-blog/pkg/database"
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"go.uber.org/zap"
@@ -77,13 +76,6 @@ func (b *baseRepo[T]) Create(c context.Context, entity *T) error {
 func (b *baseRepo[T]) Delete(c context.Context, id int64) error {
 	var model T
 	return b.Conn(c).Transaction(func(tx *gorm.DB) error {
-		userID, ok := database.GetUserID(c)
-		if ok {
-			if err := tx.Model(&model).Where("id = ?", id).UpdateColumn("deleted_by", userID).Error; err != nil {
-				logger.FromContext(c).Error("更新删除字段失败", zap.Error(err))
-				return err
-			}
-		}
 		return tx.Where("id = ?", id).Delete(&model).Error
 	})
 }

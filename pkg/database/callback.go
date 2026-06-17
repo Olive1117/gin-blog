@@ -7,6 +7,7 @@ import (
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type AuditPlugin struct{}
@@ -22,7 +23,8 @@ func (op *AuditPlugin) Initialize(db *gorm.DB) error {
 	// 注册更新钩子
 	err = db.Callback().Update().Before("gorm:update").Register("audit:before_update", op.beforeUpdate)
 	// 注册删除钩子（gorm软删除有他妈bug，气死我了）
-	// err = db.Callback().Delete().Before("gorm:delete").Register("audit:before_delete", op.beforeDelete)
+	// 获得大佬焚诀，得以正常运行（直接覆盖delete默认行为，具体见op.beforeDelete）
+	err = db.Callback().Delete().Before("gorm:delete").Register("audit:before_delete", op.beforeDelete)
 	if err != nil {
 		logger.L.Error("grom callback", zap.Error(err))
 		return err
@@ -106,28 +108,36 @@ func (op *AuditPlugin) beforeDelete(db *gorm.DB) {
 		return
 	}
 	logger.L.Debug("执行删除插件", zap.Int64("id", id))
-	// 逻辑删除本质是更新，手动设置字段
-	// if field := db.Statement.Schema.LookUpField("DeletedBy"); field != nil {
-	// 	logger.L.Debug("删除！")
-	// 	db.Statement.SetColumn("DeletedBy", id)
-	// }
-	deletedBy := db.Statement.Schema.LookUpField("DeletedBy")
-	switch db.Statement.ReflectValue.Kind() {
-	case reflect.Slice, reflect.Array:
-		// 批量删除：必须循环处理每一行
-		for i := 0; i < db.Statement.ReflectValue.Len(); i++ {
-			rv := reflect.Indirect(db.Statement.ReflectValue.Index(i))
-			if deletedBy != nil {
-				deletedBy.Set(db.Statement.Context, rv, id)
-			}
-		}
-	case reflect.Struct:
-		// 单条删除
-		rv := db.Statement.ReflectValue
-		if deletedBy != nil {
-			deletedBy.Set(db.Statement.Context, rv, id)
-		}
-	}
+
+	/*
+		gorm的软删除在执行时会直接创建sql语句更新deleted_at，默认会覆盖传入的其他更新字段（比如deleted_by）
+		无论是通过反射还是直接设置内存反射值的方式都无法生效
+		解决办法是直接覆盖gorm的软删除行为，在删除时直接构建sql语句更新deleted_at和deleted_by
+		https://github.com/go-gorm/gorm/issues/4347
+	*/
+	curTime := db.Statement.DB.NowFunc()
+	deletedBy := id
+
+	db.Statement.AddClause(clause.Update{})
+
+	db.Statement.AddClause(clause.Set{
+		{Column: clause.Column{Name: "deleted_at"}, Value: curTime},
+		{Column: clause.Column{Name: "deleted_by"}, Value: deletedBy},
+	})
+
+	db.Statement.SetColumn("deleted_at", curTime)
+	db.Statement.SetColumn("deleted_by", deletedBy)
+
+	db.Statement.AddClause(clause.Where{Exprs: []clause.Expression{
+		// clause.Eq{Column: clause.PrimaryColumn, Value: primaryKeyValue},
+		clause.Eq{Column: "deleted_at", Value: nil},
+	}})
+
+	db.Statement.Build(
+		clause.Update{}.Name(),
+		clause.Set{}.Name(),
+		clause.Where{}.Name(),
+	)
 }
 
 type userIDKey struct{}

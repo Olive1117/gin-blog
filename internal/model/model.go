@@ -6,17 +6,16 @@ import (
 	"github.com/Olive1117/gin-blog/pkg/idgen"
 	"github.com/Olive1117/gin-blog/pkg/utils"
 	"gorm.io/gorm"
-	"gorm.io/plugin/soft_delete"
 )
 
 type BaseModel struct {
-	ID        int64                 `gorm:"primaryKey;autoIncrement:false" json:"id,string"`
-	CreatedAt time.Time             `json:"created_at"`
-	UpdatedAt time.Time             `json:"updated_at"`
-	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:idx_unique_logic" json:"-"`
-	CreatedBy int64                 `gorm:"column:created_by;default:0"`
-	UpdatedBy int64                 `gorm:"column:updated_by;default:0"`
-	DeletedBy int64                 `gorm:"column:deleted_by;default:0"`
+	ID        int64          `gorm:"primaryKey;autoIncrement:false" json:"id,string"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"uniqueIndex:idx_unique_logic" json:"-"`
+	CreatedBy int64          `gorm:"column:created_by;default:0"`
+	UpdatedBy int64          `gorm:"column:updated_by;default:0"`
+	DeletedBy int64          `gorm:"column:deleted_by;default:0"`
 }
 
 func (b *BaseModel) BeforeCreate(tx *gorm.DB) (err error) {
