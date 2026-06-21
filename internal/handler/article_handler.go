@@ -132,3 +132,13 @@ func (a *articleHandler) List(c *gin.Context) {
 		"page_size": pageSize,
 	})
 }
+
+func (a *articleHandler) Stats(c *gin.Context) {
+	cx := c.Request.Context()
+	articleStats, err := a.service.Stats(cx)
+	if err != nil {
+		errs.Fail(c, err)
+		return
+	}
+	errs.Success(c, articleStats)
+}

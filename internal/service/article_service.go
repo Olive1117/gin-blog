@@ -127,3 +127,7 @@ func (a *articleService) Delete(c context.Context, id int64) error {
 func (a *articleService) List(c context.Context, page, pageSize int, filter *model.Article) ([]model.Article, int64, error) {
 	return a.Repo.FindAllArticle(c, page, pageSize, filter)
 }
+
+func (a *articleService) Stats(c context.Context) (*model.ArticleStatsDTO, error) {
+	return a.Repo.GetArticleStats(c)
+}

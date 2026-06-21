@@ -99,3 +99,48 @@ func (r *articleRepo) CountArticleByTagIDs(c context.Context, tagIDs []int64) (m
 	}
 	return counts, nil
 }
+
+func (r *articleRepo) GetArticleStats(c context.Context) (*model.ArticleStatsDTO, error) {
+	var stats model.ArticleStatsDTO
+	stats.TotalByCategory = make(map[string]int64)
+	stats.TotalByTag = make(map[string]int64)
+	if err := r.Conn(c).Model(&model.Article{}).Where("blog_article.state = ?", 1).Count(&stats.Total).Error; err != nil {
+		return nil, err
+	}
+	var categoryRows []struct {
+		Name  string
+		Count int64
+	}
+	if err := r.Conn(c).Raw(`
+			SELECT c.name, COUNT(*) as count
+			FROM blog_article a
+			JOIN blog_category c ON a.category_id = c.id
+			WHERE a.state = 1 AND a.deleted_at IS NULL
+			GROUP BY c.id, c.name
+		`).
+		Scan(&categoryRows).Error; err != nil {
+		return nil, err
+	}
+	for _, row := range categoryRows {
+		stats.TotalByCategory[row.Name] = row.Count
+	}
+	var tagRows []struct {
+		Name  string
+		Count int64
+	}
+	if err := r.Conn(c).Raw(`
+		SELECT t.name, COUNT(*) as count
+		FROM blog_article_tag at
+		JOIN blog_tag t ON at.tag_id = t.id
+		JOIN blog_article a ON at.article_id = a.id
+		WHERE a.state = 1 AND a.deleted_at IS NULL
+		GROUP BY t.name
+	`).Scan(&tagRows).Error; err != nil {
+		return nil, err
+	}
+	for _, row := range tagRows {
+		stats.TotalByTag[row.Name] = row.Count
+	}
+
+	return &stats, nil
+}

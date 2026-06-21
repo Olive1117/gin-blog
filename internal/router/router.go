@@ -35,6 +35,7 @@ func InitRouter(router *gin.Engine, handlerContainer *handler.HandlerContainer, 
 		{
 			articles.GET("", handlerContainer.Article.List)
 			articles.GET("/:id", handlerContainer.Article.Get)
+			articles.GET("/stats", handlerContainer.Article.Stats)
 		}
 		categories := public.Group("/categories")
 		{

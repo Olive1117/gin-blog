@@ -102,3 +102,9 @@ type RegisterRequest struct {
 	Website   string `json:"website"`
 	Birthdate string `json:"birthdate"`
 }
+
+type ArticleStatsDTO struct {
+	Total           int64            `json:"total"`
+	TotalByCategory map[string]int64 `json:"total_by_category"`
+	TotalByTag      map[string]int64 `json:"total_by_tag"`
+}

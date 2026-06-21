@@ -23,6 +23,7 @@ type ArticleRepo interface {
 	CountArticleByUserID(c context.Context, userID int64) (int64, error)
 	CountArticleByCategoryID(c context.Context, categoryID int64) (int64, error)
 	CountArticleByTagIDs(c context.Context, tagIDs []int64) (map[int64]int64, error)
+	GetArticleStats(c context.Context) (*model.ArticleStatsDTO, error)
 }
 type AuthRepo interface {
 	CheckAuth(c context.Context, username string, password string) (int64, error)

@@ -18,6 +18,7 @@ type BaseHandler interface {
 }
 type ArticleHandler interface {
 	BaseHandler
+	Stats(c *gin.Context)
 }
 type AuthHandler interface {
 	Auth(c *gin.Context)
