@@ -107,7 +107,12 @@ func (op *AuditPlugin) beforeDelete(db *gorm.DB) {
 		logger.L.Error("获取用户ID失败")
 		return
 	}
-	logger.L.Debug("执行删除插件", zap.Int64("id", id))
+	_, hasDeletedBy := db.Statement.Schema.FieldsByName["DeletedBy"]
+	_, hasDeletedAt := db.Statement.Schema.FieldsByName["DeletedAt"]
+	if !hasDeletedAt && !hasDeletedBy {
+		return
+	}
+	logger.L.Debug("执行删除插件", zap.Int64("id", id), zap.Bool("hasdeletedBy", hasDeletedAt), zap.Bool("hasdeletedBy", hasDeletedAt))
 
 	/*
 		gorm的软删除在执行时会直接创建sql语句更新deleted_at，默认会覆盖传入的其他更新字段（比如deleted_by）
