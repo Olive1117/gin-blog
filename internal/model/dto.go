@@ -32,6 +32,9 @@ type ArticleDTO struct {
 	CategoryName string `json:"category"`
 
 	TagNames []string `json:"tags"`
+
+	WordCount  int `json:"word_count"`
+	ImageCount int `json:"image_count"`
 }
 
 func (dto *ArticleDTO) Category(category Category) {

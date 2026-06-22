@@ -65,6 +65,9 @@ type Article struct {
 	Category   Category `json:"category" gorm:"foreignKey:CategoryID"`
 
 	Tags []Tag `json:"tags" gorm:"many2many:article_tag;"`
+
+	WordCount  int `json:"word_count" gorm:"default:0"`
+	ImageCount int `json:"image_count" gorm:"default:0"`
 }
 
 func (a *Article) AfterFind(tx *gorm.DB) (err error) {

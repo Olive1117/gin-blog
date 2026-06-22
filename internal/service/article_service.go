@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"unicode/utf8"
 
 	"github.com/Olive1117/gin-blog/internal/model"
 	"github.com/Olive1117/gin-blog/internal/repository"
@@ -43,6 +44,7 @@ func (a *articleService) Update(c context.Context, article *model.Article, id in
 		article.CategoryID = category.ID
 		article.Category = *category
 		article.Tags = tags
+		article.WordCount = utf8.RuneCountInString(article.Content)
 		logger.FromContext(c).Debug("更新文章业务", zap.Any("文章", article))
 		return a.Repo.UpdateArticle(c, article)
 	})
@@ -74,6 +76,7 @@ func (a *articleService) Create(c context.Context, article *model.Article) error
 			Content:    article.Content,
 			CategoryID: category.ID,
 			Tags:       tags,
+			WordCount:  utf8.RuneCountInString(article.Content),
 		}
 		logger.FromContext(c).Debug("即将插入文章", zap.Any("文章", article))
 		// 4. 调用 Create 方法
