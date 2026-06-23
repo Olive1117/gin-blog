@@ -1,7 +1,6 @@
 package config
 
 import (
-	"embed"
 	"os"
 	"strconv"
 	"time"
@@ -11,14 +10,15 @@ import (
 
 const (
 	defaultRunMode      = "debug"
-	defaultHTTPPort     = 8000
+	defaultHTTPPort     = 8080
 	defaultReadTimeout  = 60 * time.Second
 	defaultWriteTimeout = 60 * time.Second
 	defaultLogLevel     = "debug"
 
 	defaultDBType        = "mysql"
 	defaultDBUser        = "root"
-	defaultDBHost        = "127.0.0.1:3306"
+	defaultDBHost        = "127.0.0.1"
+	defaultDBPort        = "3306"
 	defaultDBName        = "blog"
 	defaultDBPassword    = ""
 	defaultDBCharset     = "utf8mb4"
@@ -30,9 +30,7 @@ var GlobalConfig = &AllConfig{
 	Base: &BaseConfig{
 		RunMode: "debug",
 	},
-	App: &AppConfig{
-		// JwtSecret: "!@)*#)!@U#@*!@!)",
-	},
+	App: &AppConfig{},
 	Server: &ServerConfig{
 		HTTPPort:     defaultHTTPPort,
 		ReadTimeout:  defaultReadTimeout,
@@ -41,6 +39,7 @@ var GlobalConfig = &AllConfig{
 	},
 	MySQL: &database.DBConfig{
 		Host:         defaultDBHost,
+		Port:         defaultDBPort,
 		User:         defaultDBUser,
 		DBName:       defaultDBName,
 		TablePrefix:  defaultDBTablePrefix,
@@ -53,9 +52,6 @@ var GlobalConfig = &AllConfig{
 	},
 }
 
-//go:embed app.ini
-var ConfigFS embed.FS
-
 type AllConfig struct {
 	Base   *BaseConfig
 	App    *AppConfig
@@ -64,18 +60,18 @@ type AllConfig struct {
 }
 
 type BaseConfig struct {
-	RunMode string `ini:"run_mode"`
+	RunMode string
 }
 type AppConfig struct {
-	JwtSecret string `ini:"jwt_secret"`
-	JwtIssuer string `ini:"jwt_issuer"`
+	JwtSecret string
+	JwtIssuer string
 }
 type ServerConfig struct {
-	HTTPPort     int           `ini:"http_port"`
-	ReadTimeout  time.Duration `ini:"read_timeout"`
-	WriteTimeout time.Duration `ini:"write_timeout"`
-	LogPath      string        `json:"log_path"`
-	LogLevel     string        `json:"log_level"`
+	HTTPPort     int
+	ReadTimeout  time.Duration
+	WriteTimeout time.Duration
+	LogPath      string
+	LogLevel     string
 }
 
 func init() {

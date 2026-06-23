@@ -1,0 +1,15 @@
+[client]
+default-character-set = utf8mb4
+
+[mysql]
+default-character-set = utf8mb4
+
+[mysqld]
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+
+# 时区
+default-time-zone = '+08:00'
+
+# 允许接收更大的包（比如文章内容较长）
+max_allowed_packet = 64M

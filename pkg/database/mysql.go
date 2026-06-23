@@ -12,23 +12,25 @@ import (
 )
 
 type DBConfig struct {
-	Host         string        `ini:"host"`
-	User         string        `ini:"user"`
-	Password     string        `ini:"password"`
-	DBName       string        `ini:"name"`
-	TablePrefix  string        `ini:"table_prefix"`
-	Charset      string        `ini:"charset"`
-	MaxIdleConns int           `ini:"max_idle_conns"`
-	MaxOpenConns int           `ini:"max_open_conns"`
-	MaxLifeTime  time.Duration `ini:"max_life_time"`
-	LogLevel     int           `ini:"log_level"` // 1: Silent, 2: Error, 3: Warn, 4: Info
+	Host         string
+	Port         string
+	User         string
+	Password     string
+	DBName       string
+	TablePrefix  string
+	Charset      string
+	MaxIdleConns int
+	MaxOpenConns int
+	MaxLifeTime  time.Duration
+	LogLevel     int // 1: Silent, 2: Error, 3: Warn, 4: Info
 }
 
 func NewMySQLClient(cfg *DBConfig) (*gorm.DB, error) {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=%s&parseTime=True&loc=Local",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=True&loc=Local",
 		cfg.User,
 		cfg.Password,
 		cfg.Host,
+		cfg.Port,
 		cfg.DBName,
 		cfg.Charset,
 	)
