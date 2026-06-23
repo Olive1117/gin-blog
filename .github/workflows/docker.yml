@@ -29,6 +29,10 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/olive-blog-api
+          tags: |
+            type=ref,event=pr
+            type=sha,prefix=,suffix=,format=short
+            type=raw,value=latest,enable=${{ github.ref_name == 'main' }}
 
       - name: Build and push
         uses: docker/build-push-action@v5
