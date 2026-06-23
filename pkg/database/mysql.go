@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Olive1117/gin-blog/internal/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -49,6 +50,7 @@ func NewMySQLClient(cfg *DBConfig) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	InitSchemaAndSeed(db)
 	sqlDB.SetMaxIdleConns(cfg.MaxIdleConns)
 	sqlDB.SetMaxOpenConns(cfg.MaxOpenConns)
 	sqlDB.SetConnMaxLifetime(cfg.MaxLifeTime)
@@ -80,4 +82,34 @@ func (g *gormTransaction) Transaction(c context.Context, fn func(c context.Conte
 		newc := context.WithValue(c, "tx", tx)
 		return fn(newc)
 	})
+}
+
+func InitSchemaAndSeed(db *gorm.DB) {
+	if !db.Migrator().HasTable(&model.Tag{}) {
+		db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文章标签管理'").AutoMigrate(&model.Tag{})
+	}
+
+	if !db.Migrator().HasTable(&model.Category{}) {
+		db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文章分类管理'").AutoMigrate(&model.Category{})
+	}
+
+	if !db.Migrator().HasTable(&model.Article{}) {
+		db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文章管理'").AutoMigrate(&model.Article{})
+	}
+	if !db.Migrator().HasTable(&model.ArticleTag{}) {
+		db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文章标签关联'").AutoMigrate(&model.ArticleTag{})
+	}
+	if !db.Migrator().HasTable(&model.User{}) {
+		db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户管理'").AutoMigrate(&model.User{})
+	}
+	// 插入默认 admin 用户
+	var count int64
+	db.Model(&model.User{}).Where("username = ?", "admin").Count(&count)
+	if count == 0 {
+		db.Create(&model.User{
+			BaseModel: model.BaseModel{ID: 1},
+			Username:  "admin",
+			Password:  "123456", // 实际项目要加密
+		})
+	}
 }
