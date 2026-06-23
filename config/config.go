@@ -2,12 +2,28 @@ package config
 
 import (
 	"embed"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/Olive1117/gin-blog/pkg/database"
-	"github.com/Olive1117/gin-blog/pkg/logger"
-	"github.com/go-ini/ini"
-	"go.uber.org/zap"
+)
+
+const (
+	defaultRunMode      = "debug"
+	defaultHTTPPort     = 8000
+	defaultReadTimeout  = 60 * time.Second
+	defaultWriteTimeout = 60 * time.Second
+	defaultLogLevel     = "debug"
+
+	defaultDBType        = "mysql"
+	defaultDBUser        = "root"
+	defaultDBHost        = "127.0.0.1:3306"
+	defaultDBName        = "blog"
+	defaultDBPassword    = ""
+	defaultDBCharset     = "utf8mb4"
+	defaultDBTablePrefix = "blog_"
+	defaultDBLogLevel    = 4
 )
 
 var GlobalConfig = &AllConfig{
@@ -18,30 +34,22 @@ var GlobalConfig = &AllConfig{
 		// JwtSecret: "!@)*#)!@U#@*!@!)",
 	},
 	Server: &ServerConfig{
-		HTTPPort:     8000,
-		ReadTimeout:  60,
-		WriteTimeout: 60,
-		LogPath:      "logs/gin.log",
-		LogLevel:     "debug",
-	},
-	SQL: &SQLConfig{
-		Type:        "mysql",
-		User:        "root",
-		Host:        "127.0.0.1:3306",
-		Name:        "bolg",
-		TablePrefix: "blog_",
-		Charset:     "utf8mb4",
+		HTTPPort:     defaultHTTPPort,
+		ReadTimeout:  defaultReadTimeout,
+		WriteTimeout: defaultWriteTimeout,
+		LogLevel:     defaultLogLevel,
 	},
 	MySQL: &database.DBConfig{
-		Host:         "127.0.0.1:3306",
-		User:         "root",
-		DBName:       "blog",
-		TablePrefix:  "blog_",
-		Charset:      "utf8mb4",
+		Host:         defaultDBHost,
+		User:         defaultDBUser,
+		DBName:       defaultDBName,
+		TablePrefix:  defaultDBTablePrefix,
+		Password:     defaultDBPassword,
+		Charset:      defaultDBCharset,
 		MaxIdleConns: 10,
 		MaxOpenConns: 100,
 		MaxLifeTime:  time.Hour,
-		LogLevel:     4,
+		LogLevel:     defaultDBLogLevel,
 	},
 }
 
@@ -52,7 +60,6 @@ type AllConfig struct {
 	Base   *BaseConfig
 	App    *AppConfig
 	Server *ServerConfig
-	SQL    *SQLConfig
 	MySQL  *database.DBConfig
 }
 
@@ -70,33 +77,53 @@ type ServerConfig struct {
 	LogPath      string        `json:"log_path"`
 	LogLevel     string        `json:"log_level"`
 }
-type SQLConfig struct {
-	Type        string `ini:"type"`
-	User        string `ini:"user"`
-	Password    string `ini:"password"`
-	Host        string `ini:"host"`
-	Name        string `ini:"name"`
-	TablePrefix string `ini:"table_prefix"`
-	Charset     string `ini:"charset"`
-}
 
 func init() {
-	//TODO 移除硬编码文件名
-	data, err := ConfigFS.ReadFile("app.ini")
-	if err != nil {
-		logger.L.Error("没有找到app.ini配置文件", zap.Error(err))
+	// Base
+	if v := os.Getenv("RUN_MODE"); v != "" {
+		GlobalConfig.Base.RunMode = v
 	}
-	cfg, err := ini.Load(data)
-	if err != nil {
-		logger.L.Error("app.ini读取错误", zap.Error(err))
+
+	// App
+	if v := os.Getenv("JWT_SECRET"); v != "" {
+		GlobalConfig.App.JwtSecret = v
 	}
-	// 映射配置
-	cfg.Section("").MapTo(GlobalConfig.Base)
-	cfg.Section("app").MapTo(GlobalConfig.App)
-	cfg.Section("server").MapTo(GlobalConfig.Server)
-	cfg.Section("database").MapTo(GlobalConfig.SQL)
-	cfg.Section("database").MapTo(GlobalConfig.MySQL)
-	// 处理时间转换
-	GlobalConfig.Server.ReadTimeout *= time.Second
-	GlobalConfig.Server.WriteTimeout *= time.Second
+	if v := os.Getenv("JWT_ISSUER"); v != "" {
+		GlobalConfig.App.JwtIssuer = v
+	}
+
+	// Server
+	if v := os.Getenv("HTTP_PORT"); v != "" {
+		if port, err := strconv.Atoi(v); err == nil {
+			GlobalConfig.Server.HTTPPort = port
+		}
+	}
+	if v := os.Getenv("LOG_LEVEL"); v != "" {
+		GlobalConfig.Server.LogLevel = v
+	}
+
+	// Database
+	if v := os.Getenv("DB_HOST"); v != "" {
+		GlobalConfig.MySQL.Host = v
+	}
+	if v := os.Getenv("DB_USER"); v != "" {
+		GlobalConfig.MySQL.User = v
+	}
+	if v := os.Getenv("DB_PASSWORD"); v != "" {
+		GlobalConfig.MySQL.Password = v
+	}
+	if v := os.Getenv("DB_NAME"); v != "" {
+		GlobalConfig.MySQL.DBName = v
+	}
+	if v := os.Getenv("DB_CHARSET"); v != "" {
+		GlobalConfig.MySQL.Charset = v
+	}
+	if v := os.Getenv("DB_TABLE_PREFIX"); v != "" {
+		GlobalConfig.MySQL.TablePrefix = v
+	}
+	if v := os.Getenv("DB_LOG_LEVEL"); v != "" {
+		if level, err := strconv.Atoi(v); err == nil {
+			GlobalConfig.MySQL.LogLevel = level
+		}
+	}
 }
