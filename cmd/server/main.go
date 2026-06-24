@@ -20,7 +20,7 @@ func main() {
 	jwtHandler := jwt.NewJWT(config.GlobalConfig.App.JwtSecret, config.GlobalConfig.App.JwtIssuer)
 	DB, err := database.NewMySQLClient(config.GlobalConfig.MySQL)
 	if err != nil {
-		logger.L.Error("MySQL初始化失败", zap.Error(err))
+		logger.L.Error("MySQL连接失败", zap.Error(err))
 	}
 	gormTransaction := database.NewgormTransaction(DB)
 	r := gin.New()
