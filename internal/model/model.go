@@ -53,10 +53,6 @@ type User struct {
 	// LastLoginAt time.Time `json:"last_login_at"`
 }
 
-func (User) TableName() string {
-	return "blog_user"
-}
-
 type Article struct {
 	BaseModel
 	Title   string `json:"title" gorm:"type:varchar(100);default:'';comment:文章标题"`
@@ -68,14 +64,10 @@ type Article struct {
 	CategoryID int64    `json:"category_id" gorm:"type:bigint(20) unsigned;default:0;comment:分类ID"`
 	Category   Category `json:"category" gorm:"foreignKey:CategoryID"`
 
-	Tags []Tag `json:"tags" gorm:"many2many:blog_article_tag;"`
+	Tags []Tag `json:"tags" gorm:"many2many:article_tag;"`
 
 	WordCount  int `json:"word_count" gorm:"type:int(10) unsigned;default:0;comment:文章字数"`
 	ImageCount int `json:"image_count" gorm:"type:int(10) unsigned;default:0;comment:文章字数"`
-}
-
-func (Article) TableName() string {
-	return "blog_article"
 }
 
 func (a *Article) AfterFind(tx *gorm.DB) (err error) {
@@ -99,10 +91,6 @@ type Category struct {
 	State *int8  `json:"state" gorm:"type:tinyint(3) unsigned;default:1;comment:状态 0为禁用、1为启用"`
 }
 
-func (Category) TableName() string {
-	return "blog_category"
-}
-
 type Tag struct {
 	BaseModel
 	Name  string `json:"name" gorm:"type:varchar(100);default:'';comment:标签名称;index:,composite:deletedat,unique,priority:1"`
@@ -111,17 +99,9 @@ type Tag struct {
 	Articles []Article `gorm:"many2many:article_tag;"`
 }
 
-func (Tag) TableName() string {
-	return "blog_tag"
-}
-
 type ArticleTag struct {
 	ArticleID uint64  `gorm:"type:bigint(20) unsigned;primaryKey;comment:文章ID" json:"article_id"`
 	TagID     uint64  `gorm:"type:bigint(20) unsigned;primaryKey;comment:标签ID" json:"tag_id"`
 	Article   Article `gorm:"constraint:OnDelete:CASCADE;foreignKey:ArticleID" json:"-"`
 	Tag       Tag     `gorm:"constraint:OnDelete:CASCADE;foreignKey:TagID" json:"-"`
-}
-
-func (ArticleTag) TableName() string {
-	return "blog_article_tag"
 }
