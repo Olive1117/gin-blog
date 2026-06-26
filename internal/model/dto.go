@@ -73,13 +73,13 @@ type UserDTO struct {
 	Email    string `json:"email"`
 
 	// 基本资料
-	Nickname  string `json:"nickname"`
-	Avatar    string `json:"avatar"`
-	Banner    string `json:"banner"`
-	Bio       string `json:"bio"`
-	Location  string `json:"location"`
-	Website   string `json:"website"`
-	Birthdate string `json:"birthdate"`
+	Nickname  string    `json:"nickname"`
+	Avatar    string    `json:"avatar"`
+	Banner    string    `json:"banner"`
+	Bio       string    `json:"bio"`
+	Location  string    `json:"location"`
+	Website   string    `json:"website"`
+	Birthdate time.Time `json:"birthdate"`
 
 	// 统计数据 (如果你想学推特做缓存计数)
 	PostCount   int `json:"post_count"`
@@ -97,13 +97,13 @@ type RegisterRequest struct {
 	Email    string `json:"email" binding:"omitempty,email"`
 	Password string `json:"password" binding:"required,min=8,max=64"`
 	// 基本资料
-	Nickname  string `json:"nickname"`
-	Avatar    string `json:"avatar"`
-	Banner    string `json:"banner"`
-	Bio       string `json:"bio"`
-	Location  string `json:"location"`
-	Website   string `json:"website"`
-	Birthdate string `json:"birthdate"`
+	Nickname        string `json:"nickname"`
+	Avatar          string `json:"avatar"`
+	Banner          string `json:"banner"`
+	Bio             string `json:"bio"`
+	Location        string `json:"location"`
+	Website         string `json:"website"`
+	BirthdateString string `json:"birthdate"`
 }
 
 type ArticleStatsDTO struct {

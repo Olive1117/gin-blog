@@ -53,6 +53,12 @@ type User struct {
 	// LastLoginAt time.Time `json:"last_login_at"`
 }
 
+func (u *User) BirthdateString(BirthdateString string) {
+	if b, err := time.ParseInLocation("2006-01-02", BirthdateString, time.Local); err == nil {
+		u.Birthdate = &b
+	}
+}
+
 type Article struct {
 	BaseModel
 	Title   string `json:"title" gorm:"type:varchar(100);default:'';comment:文章标题"`
