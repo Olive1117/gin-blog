@@ -14,6 +14,7 @@ const (
 	defaultReadTimeout  = 60 * time.Second
 	defaultWriteTimeout = 60 * time.Second
 	defaultLogLevel     = "debug"
+	defaultLogPath      = "./logs/blog.log"
 
 	defaultDBType        = "mysql"
 	defaultDBUser        = "root"
@@ -36,6 +37,7 @@ var GlobalConfig = &AllConfig{
 		ReadTimeout:  defaultReadTimeout,
 		WriteTimeout: defaultWriteTimeout,
 		LogLevel:     defaultLogLevel,
+		LogPath:      defaultLogPath,
 	},
 	MySQL: &database.DBConfig{
 		Host:         defaultDBHost,
