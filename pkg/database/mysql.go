@@ -18,7 +18,6 @@ type DBConfig struct {
 	User         string
 	Password     string
 	DBName       string
-	TablePrefix  string
 	Charset      string
 	MaxIdleConns int
 	MaxOpenConns int
@@ -38,7 +37,6 @@ func NewMySQLClient(cfg *DBConfig) (*gorm.DB, error) {
 	gormConfig := &gorm.Config{
 		Logger: logger.Default.LogMode(logger.LogLevel(cfg.LogLevel)),
 		NamingStrategy: schema.NamingStrategy{
-			TablePrefix:   cfg.TablePrefix,
 			SingularTable: true,
 		},
 	}

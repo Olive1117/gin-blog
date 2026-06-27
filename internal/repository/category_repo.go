@@ -21,7 +21,7 @@ func NewCategoryRepo(db *gorm.DB) CategoryRepo {
 // 同步分类
 func (r *categoryRepo) SyncCategory(ctx context.Context, name string) (*model.Category, error) {
 	var category = &model.Category{Name: name}
-	err := r.Conn(ctx).WithContext(ctx).Where("name = ?", name).FirstOrCreate(category).Error
+	err := r.Conn(ctx).Where("name = ?", name).FirstOrCreate(category).Error
 	return category, err
 }
 

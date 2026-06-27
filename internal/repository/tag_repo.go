@@ -25,7 +25,7 @@ func (r *tagRepo) SyncTags(ctx context.Context, names []string) ([]model.Tag, er
 	}
 	var tags []model.Tag
 	// 根据标签名列表获取已有标签
-	if err := r.Conn(ctx).WithContext(ctx).Where("name IN ?", names).Find(&tags).Error; err != nil {
+	if err := r.Conn(ctx).Where("name IN ?", names).Find(&tags).Error; err != nil {
 		return nil, err
 	}
 	// 找出不存在的标签并创建
@@ -40,7 +40,7 @@ func (r *tagRepo) SyncTags(ctx context.Context, names []string) ([]model.Tag, er
 		}
 	}
 	if len(newTags) > 0 {
-		if err := r.Conn(ctx).WithContext(ctx).Create(&newTags).Error; err != nil {
+		if err := r.Conn(ctx).Create(&newTags).Error; err != nil {
 			return nil, err
 		}
 		tags = append(tags, newTags...)
