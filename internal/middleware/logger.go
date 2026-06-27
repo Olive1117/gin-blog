@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Olive1117/gin-blog/pkg/database"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -35,7 +36,9 @@ func GinLogger() gin.HandlerFunc {
 		c.Next()
 
 		cost := time.Since(start)
+		userID, _ := database.GetUserID(c.Request.Context())
 		logger.FromContext(c.Request.Context()).Info("HTTP Request",
+			zap.Int64("user", userID),
 			zap.Int("status", c.Writer.Status()),
 			zap.String("method", c.Request.Method),
 			zap.String("path", path),
