@@ -40,7 +40,7 @@ func (r *articleRepo) FindAllArticle(c context.Context, page, pageSize int, enti
 		// 	Where("blog_tag.name IN ?", tagNames)
 		subQuery := r.Conn(c).Model(&model.ArticleTag{}).
 			Joins("Tag", r.Conn(c).Select("article_id")).Where("name IN ?", tagNames)
-		db = db.Where("blog_article.id IN (?)", subQuery)
+		db = db.Model(&model.Article{}).Where("blog_article.id IN (?)", subQuery)
 	}
 	// 基础过滤条件
 	if entity != nil {
