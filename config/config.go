@@ -16,15 +16,14 @@ const (
 	defaultLogLevel     = "debug"
 	defaultLogPath      = "./logs/blog.log"
 
-	defaultDBType        = "mysql"
-	defaultDBUser        = "root"
-	defaultDBHost        = "127.0.0.1"
-	defaultDBPort        = "3306"
-	defaultDBName        = "blog"
-	defaultDBPassword    = ""
-	defaultDBCharset     = "utf8mb4"
-	defaultDBTablePrefix = "blog_"
-	defaultDBLogLevel    = 4
+	defaultDBType     = "mysql"
+	defaultDBUser     = "root"
+	defaultDBHost     = "127.0.0.1"
+	defaultDBPort     = "3306"
+	defaultDBName     = "blog"
+	defaultDBPassword = ""
+	defaultDBCharset  = "utf8mb4"
+	defaultDBLogLevel = 4
 )
 
 var GlobalConfig = &AllConfig{
@@ -44,7 +43,6 @@ var GlobalConfig = &AllConfig{
 		Port:         defaultDBPort,
 		User:         defaultDBUser,
 		DBName:       defaultDBName,
-		TablePrefix:  defaultDBTablePrefix,
 		Password:     defaultDBPassword,
 		Charset:      defaultDBCharset,
 		MaxIdleConns: 10,
@@ -115,9 +113,6 @@ func init() {
 	}
 	if v := os.Getenv("DB_CHARSET"); v != "" {
 		GlobalConfig.MySQL.Charset = v
-	}
-	if v := os.Getenv("DB_TABLE_PREFIX"); v != "" {
-		GlobalConfig.MySQL.TablePrefix = v
 	}
 	if v := os.Getenv("DB_LOG_LEVEL"); v != "" {
 		if level, err := strconv.Atoi(v); err == nil {

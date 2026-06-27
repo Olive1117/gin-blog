@@ -18,7 +18,6 @@ type DBConfig struct {
 	User         string
 	Password     string
 	DBName       string
-	TablePrefix  string
 	Charset      string
 	MaxIdleConns int
 	MaxOpenConns int
