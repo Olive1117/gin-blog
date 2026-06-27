@@ -34,13 +34,9 @@ func (r *articleRepo) FindAllArticle(c context.Context, page, pageSize int, enti
 			tagNames[i] = tag.Name
 		}
 		// 通过子查询过滤包含指定标签的文章
-		// subQuery := r.Conn(c).Table("blog_article_tag").
-		// 	Select("article_id").
-		// 	Joins("JOIN blog_tag ON blog_tag.id = blog_article_tag.tag_id").
-		// 	Where("blog_tag.name IN ?", tagNames)
-		subQuery := r.Conn(c).Model(&model.ArticleTag{}).
-			Joins("Tag", r.Conn(c).Select("article_id")).Where("name IN ?", tagNames)
-		db = db.Model(&model.Article{}).Where("blog_article.id IN (?)", subQuery)
+		tagSubQuery := db.Model(&model.Tag{}).Select("id").Where("name IN (?)", tagNames)
+		articleSubQuery := db.Model(&model.ArticleTag{}).Select("article_id").Where("tag_id IN (?)", tagSubQuery)
+		db = db.Model(&model.Article{}).Where("id IN (?)", articleSubQuery)
 	}
 	// 基础过滤条件
 	if entity != nil {
