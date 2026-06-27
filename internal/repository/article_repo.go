@@ -25,7 +25,7 @@ func (r *articleRepo) CreateArticle(c context.Context, article *model.Article) e
 func (r *articleRepo) FindAllArticle(c context.Context, page, pageSize int, entity *model.Article) ([]model.Article, int64, error) {
 	db := r.Conn(c)
 	if entity.Category.Name != "" {
-		db = db.Joins("Category").Where("category.name = ?", entity.Category.Name)
+		db = db.Joins("Category").Where("Category.name = ?", entity.Category.Name)
 	}
 	// 构建查询条件
 	if len(entity.Tags) > 0 {
