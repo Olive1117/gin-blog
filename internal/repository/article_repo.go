@@ -88,7 +88,11 @@ func (r *articleRepo) CountArticleByTagIDs(c context.Context, tagIDs []int64) (m
 		Count int64
 	}
 	var rows []result
-	if err := r.Conn(c).Raw("SELECT tag_id, COUNT(*) as count FROM blog_article_tag WHERE tag_id IN ? GROUP BY tag_id", tagIDs).Scan(&rows).Error; err != nil {
+	if err := r.Conn(c).Model(&model.ArticleTag{}).
+		Select("tag_id, COUNT(*) as count").
+		Where("tag_id IN ?", tagIDs).
+		Group("tag_id").
+		Scan(&rows).Error; err != nil {
 		return nil, err
 	}
 	counts := make(map[int64]int64, len(rows))
@@ -102,20 +106,18 @@ func (r *articleRepo) GetArticleStats(c context.Context) (*model.ArticleStatsDTO
 	var stats model.ArticleStatsDTO
 	stats.TotalByCategory = make(map[string]int64)
 	stats.TotalByTag = make(map[string]int64)
-	if err := r.Conn(c).Model(&model.Article{}).Where("blog_article.state = ?", 1).Count(&stats.Total).Error; err != nil {
+	if err := r.Conn(c).Model(&model.Article{}).Where("state = ?", 1).Count(&stats.Total).Error; err != nil {
 		return nil, err
 	}
 	var categoryRows []struct {
 		Name  string
 		Count int64
 	}
-	if err := r.Conn(c).Raw(`
-			SELECT c.name, COUNT(*) as count
-			FROM blog_article a
-			JOIN blog_category c ON a.category_id = c.id
-			WHERE a.state = 1 AND a.deleted_at IS NULL
-			GROUP BY c.id, c.name
-		`).
+	if err := r.Conn(c).
+		Model(&model.Article{}).
+		Select("category.name, COUNT(*) as count").
+		Joins("left join category on category.id = article.category_id and category.state = ? and category.deleted_at is null", 1).
+		Group("category.name").
 		Scan(&categoryRows).Error; err != nil {
 		return nil, err
 	}
@@ -126,14 +128,13 @@ func (r *articleRepo) GetArticleStats(c context.Context) (*model.ArticleStatsDTO
 		Name  string
 		Count int64
 	}
-	if err := r.Conn(c).Raw(`
-		SELECT t.name, COUNT(*) as count
-		FROM blog_article_tag at
-		JOIN blog_tag t ON at.tag_id = t.id
-		JOIN blog_article a ON at.article_id = a.id
-		WHERE a.state = 1 AND a.deleted_at IS NULL
-		GROUP BY t.name
-	`).Scan(&tagRows).Error; err != nil {
+	if err := r.Conn(c).
+		Model(&model.Article{}).
+		Select("t.name, COUNT(*) as count").
+		Joins("left join article_tag as at on article.id = at.article_id").
+		Joins("left join tag as t on t.id = at.tag_id and t.state = ? and t.deleted_at is null", 1).
+		Group("t.name").
+		Scan(&tagRows).Error; err != nil {
 		return nil, err
 	}
 	for _, row := range tagRows {

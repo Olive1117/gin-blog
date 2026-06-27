@@ -38,7 +38,6 @@ func NewMySQLClient(cfg *DBConfig) (*gorm.DB, error) {
 	gormConfig := &gorm.Config{
 		Logger: logger.Default.LogMode(logger.LogLevel(cfg.LogLevel)),
 		NamingStrategy: schema.NamingStrategy{
-			TablePrefix:   cfg.TablePrefix,
 			SingularTable: true,
 		},
 	}
