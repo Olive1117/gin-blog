@@ -66,6 +66,7 @@ type Article struct {
 	Content string `json:"content" gorm:"type:text"`
 	State   *int8  `json:"state" gorm:"type:tinyint(3) unsigned;default:1;comment:状态 0为禁用1为启用"`
 	ShortID string `json:"short_id" gorm:"-"`
+	Slug    string `json:"slug" gorm:"type:varchar(255);default:'';comment:URL尾链"`
 
 	CategoryID int64    `json:"category_id" gorm:"type:bigint(20) unsigned;default:0;comment:分类ID"`
 	Category   Category `json:"category" gorm:"foreignKey:CategoryID"`

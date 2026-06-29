@@ -2,11 +2,11 @@ package handler
 
 import (
 	"github.com/Olive1117/gin-blog/internal/model"
+	"github.com/Olive1117/gin-blog/internal/model/convert"
 	"github.com/Olive1117/gin-blog/internal/service"
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/copier"
 	"github.com/spf13/cast"
 	"go.uber.org/zap"
 )
@@ -34,9 +34,8 @@ func (ch *categoryHandler) Create(c *gin.Context) {
 		errs.Fail(c, err)
 		return
 	}
-	var categoryDTO model.CategoryDTO
-	copier.CopyWithOption(&categoryDTO, &category, copier.Option{IgnoreEmpty: true})
-	errs.Success(c, categoryDTO)
+	categoryVO := convert.CategoryToVO(&category)
+	errs.Success(c, categoryVO)
 }
 
 func (ch *categoryHandler) List(c *gin.Context) {
@@ -55,10 +54,9 @@ func (ch *categoryHandler) List(c *gin.Context) {
 		errs.Fail(c, err)
 		return
 	}
-	var categoryDTOs []model.CategoryDTO
-	copier.CopyWithOption(&categoryDTOs, &categories, copier.Option{IgnoreEmpty: true})
+	categoryVOs := convert.MapSlice(categories, convert.CategoryToVO)
 	errs.Success(c, gin.H{
-		"list":      categoryDTOs,
+		"list":      categoryVOs,
 		"total":     total,
 		"page":      page,
 		"page_size": pageSize,
@@ -74,9 +72,8 @@ func (ch *categoryHandler) Get(c *gin.Context) {
 		errs.Fail(c, err)
 		return
 	}
-	var categoryDTO model.CategoryDTO
-	copier.CopyWithOption(&categoryDTO, &category, copier.Option{IgnoreEmpty: true})
-	errs.Success(c, categoryDTO)
+	categoryVO := convert.CategoryToVO(&category)
+	errs.Success(c, categoryVO)
 }
 
 func (ch *categoryHandler) Update(c *gin.Context) {

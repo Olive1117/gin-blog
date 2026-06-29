@@ -131,6 +131,6 @@ func (a *articleService) List(c context.Context, page, pageSize int, filter *mod
 	return a.Repo.FindAllArticle(c, page, pageSize, filter)
 }
 
-func (a *articleService) Stats(c context.Context) (*model.ArticleStatsDTO, error) {
+func (a *articleService) Stats(c context.Context) (*model.ArticleStatsVO, error) {
 	return a.Repo.GetArticleStats(c)
 }

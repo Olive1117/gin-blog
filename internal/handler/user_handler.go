@@ -2,10 +2,10 @@ package handler
 
 import (
 	"github.com/Olive1117/gin-blog/internal/model"
+	"github.com/Olive1117/gin-blog/internal/model/convert"
 	"github.com/Olive1117/gin-blog/internal/service"
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/copier"
 	"github.com/spf13/cast"
 )
 
@@ -20,20 +20,18 @@ func NewUserHandler(service service.UserService) UserHandler {
 }
 func (u *userHandler) Create(c *gin.Context) {
 	cx := c.Request.Context()
-	var registerRequest model.RegisterRequest
-	if err := c.ShouldBindJSON(&registerRequest); err != nil {
+	var UserDTO model.UserDTO
+	if err := c.ShouldBindJSON(&UserDTO); err != nil {
 		errs.Fail(c, errs.ErrInvalidParam)
 		return
 	}
-	var user model.User
-	copier.CopyWithOption(&user, &registerRequest, copier.Option{IgnoreEmpty: true})
-	if err := u.Service.Create(cx, &user); err != nil {
+	user := convert.UserFromDTO(&UserDTO)
+	if err := u.Service.Create(cx, user); err != nil {
 		errs.Fail(c, err)
 		return
 	}
-	var userDTO model.UserDTO
-	copier.CopyWithOption(&userDTO, &user, copier.Option{IgnoreEmpty: true})
-	errs.Success(c, userDTO)
+	userVO := convert.UserToVO(user)
+	errs.Success(c, userVO)
 }
 func (u *userHandler) Delete(c *gin.Context) {
 	cx := c.Request.Context()
@@ -51,9 +49,8 @@ func (u *userHandler) Get(c *gin.Context) {
 		errs.Fail(c, err)
 		return
 	}
-	var userDTO model.UserDTO
-	copier.CopyWithOption(&userDTO, &user, copier.Option{IgnoreEmpty: true})
-	errs.Success(c, userDTO)
+	userVO := convert.UserToVO(&user)
+	errs.Success(c, userVO)
 }
 func (u *userHandler) List(c *gin.Context) {
 	cx := c.Request.Context()
@@ -69,10 +66,9 @@ func (u *userHandler) List(c *gin.Context) {
 		errs.Fail(c, err)
 		return
 	}
-	var userDTOs []model.UserDTO
-	copier.CopyWithOption(&userDTOs, &users, copier.Option{IgnoreEmpty: true})
+	userVOs := convert.MapSlice(users, convert.UserToVO)
 	errs.Success(c, gin.H{
-		"list":  userDTOs,
+		"list":  userVOs,
 		"total": total,
 	})
 }
@@ -107,7 +103,6 @@ func (u *userHandler) GetMe(c *gin.Context) {
 		errs.Fail(c, err)
 		return
 	}
-	var userDTO model.UserDTO
-	copier.CopyWithOption(&userDTO, &user, copier.Option{IgnoreEmpty: true})
-	errs.Success(c, userDTO)
+	userVO := convert.UserToVO(&user)
+	errs.Success(c, userVO)
 }

@@ -2,11 +2,11 @@ package handler
 
 import (
 	"github.com/Olive1117/gin-blog/internal/model"
+	"github.com/Olive1117/gin-blog/internal/model/convert"
 	"github.com/Olive1117/gin-blog/internal/service"
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/copier"
 	"github.com/spf13/cast"
 	"go.uber.org/zap"
 )
@@ -34,9 +34,8 @@ func (th *tagHandler) Create(c *gin.Context) {
 		errs.Fail(c, err)
 		return
 	}
-	var tagDTO model.TagDTO
-	copier.CopyWithOption(&tagDTO, &tag, copier.Option{IgnoreEmpty: true})
-	errs.Success(c, tagDTO)
+	tagVO := convert.TagToVO(&tag)
+	errs.Success(c, tagVO)
 }
 
 func (th *tagHandler) List(c *gin.Context) {
@@ -55,8 +54,7 @@ func (th *tagHandler) List(c *gin.Context) {
 		errs.Fail(c, err)
 		return
 	}
-	var tagDTOs []model.TagDTO
-	copier.CopyWithOption(&tagDTOs, &tags, copier.Option{IgnoreEmpty: true})
+	tagDTOs := convert.MapSlice(tags, convert.TagToVO)
 	errs.Success(c, gin.H{
 		"list":      tagDTOs,
 		"total":     total,
@@ -75,9 +73,8 @@ func (th *tagHandler) Get(c *gin.Context) {
 		errs.Fail(c, err)
 		return
 	}
-	var tagDTO model.TagDTO
-	copier.CopyWithOption(&tagDTO, &tag, copier.Option{IgnoreEmpty: true})
-	errs.Success(c, tagDTO)
+	tagVO := convert.TagToVO(&tag)
+	errs.Success(c, tagVO)
 }
 
 func (th *tagHandler) Delete(c *gin.Context) {

@@ -15,7 +15,7 @@ type BaseService[T any] interface {
 }
 type ArticleService interface {
 	BaseService[model.Article]
-	Stats(c context.Context) (*model.ArticleStatsDTO, error)
+	Stats(c context.Context) (*model.ArticleStatsVO, error)
 }
 type AuthService interface {
 	Auth(c context.Context, req *model.AuthRequest) (*model.AuthResponse, error)

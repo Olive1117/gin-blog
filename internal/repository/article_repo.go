@@ -102,8 +102,8 @@ func (r *articleRepo) CountArticleByTagIDs(c context.Context, tagIDs []int64) (m
 	return counts, nil
 }
 
-func (r *articleRepo) GetArticleStats(c context.Context) (*model.ArticleStatsDTO, error) {
-	var stats model.ArticleStatsDTO
+func (r *articleRepo) GetArticleStats(c context.Context) (*model.ArticleStatsVO, error) {
+	var stats model.ArticleStatsVO
 	stats.TotalByCategory = make(map[string]int64)
 	stats.TotalByTag = make(map[string]int64)
 	if err := r.Conn(c).Model(&model.Article{}).Where("state = ?", 1).Count(&stats.Total).Error; err != nil {

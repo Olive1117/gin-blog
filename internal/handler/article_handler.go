@@ -2,12 +2,12 @@ package handler
 
 import (
 	"github.com/Olive1117/gin-blog/internal/model"
+	"github.com/Olive1117/gin-blog/internal/model/convert"
 	"github.com/Olive1117/gin-blog/internal/service"
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/Olive1117/gin-blog/pkg/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/copier"
 	"github.com/spf13/cast"
 	"go.uber.org/zap"
 )
@@ -32,7 +32,7 @@ func (a *articleHandler) Create(c *gin.Context) {
 		return
 	}
 	logger.FromContext(cx).Debug("创建文章", zap.Any("文章", articleDTO))
-	copier.CopyWithOption(&article, &articleDTO, copier.Option{IgnoreEmpty: true})
+	article = *convert.ArticleFromDTO(&articleDTO)
 
 	if err := a.service.Create(cx, &article); err != nil {
 		errs.Fail(c, err)
@@ -73,9 +73,9 @@ func (a *articleHandler) Get(c *gin.Context) {
 		errs.Fail(c, err)
 		return
 	}
-	var articleDTO model.ArticleDTO
-	copier.CopyWithOption(&articleDTO, &article, copier.Option{IgnoreEmpty: true})
-	errs.Success(c, articleDTO)
+	var articleVO = convert.ArticleToVO(&article)
+
+	errs.Success(c, articleVO)
 }
 func (a *articleHandler) Update(c *gin.Context) {
 	cx := c.Request.Context()
@@ -92,7 +92,7 @@ func (a *articleHandler) Update(c *gin.Context) {
 		return
 	}
 	logger.FromContext(cx).Debug("更新文章", zap.Int64("id", id), zap.Any("文章", articleDTO))
-	copier.CopyWithOption(&article, &articleDTO, copier.Option{IgnoreEmpty: true})
+	article = *convert.ArticleFromDTO(&articleDTO)
 
 	if err := a.service.Update(cx, &article, id); err != nil {
 		errs.Fail(c, err)
@@ -104,10 +104,10 @@ func (a *articleHandler) Update(c *gin.Context) {
 func (a *articleHandler) List(c *gin.Context) {
 	cx := c.Request.Context()
 	var (
-		articles    []model.Article
-		articleDTOs []model.ArticleDTO
-		article     model.Article
-		query       model.ArticleQuery
+		articles   []model.Article
+		articleVOs []model.ArticleVO
+		article    model.Article
+		query      model.ArticleQuery
 	)
 	page := cast.ToInt(c.DefaultQuery("page", "1"))
 	pageSize := cast.ToInt(c.DefaultQuery("page_size", "10"))
@@ -116,7 +116,7 @@ func (a *articleHandler) List(c *gin.Context) {
 		errs.Fail(c, errs.ErrInvalidParam)
 		return
 	}
-	copier.CopyWithOption(&article, &query, copier.Option{IgnoreEmpty: true})
+	article = *convert.ArticleFromQuery(&query)
 	logger.FromContext(cx).Debug("获取文章列表", zap.Int("page", page), zap.Int("page_size", pageSize), zap.Any("query", &article))
 
 	articles, total, err := a.service.List(cx, page, pageSize, &article)
@@ -124,9 +124,9 @@ func (a *articleHandler) List(c *gin.Context) {
 		errs.Fail(c, err)
 		return
 	}
-	copier.CopyWithOption(&articleDTOs, &articles, copier.Option{IgnoreEmpty: true})
+	articleVOs = convert.MapSlice(articles, convert.ArticleToVO)
 	errs.Success(c, gin.H{
-		"list":      articleDTOs,
+		"list":      articleVOs,
 		"total":     total,
 		"page":      page,
 		"page_size": pageSize,
