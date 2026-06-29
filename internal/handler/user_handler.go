@@ -5,8 +5,10 @@ import (
 	"github.com/Olive1117/gin-blog/internal/model/convert"
 	"github.com/Olive1117/gin-blog/internal/service"
 	"github.com/Olive1117/gin-blog/pkg/errs"
+	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cast"
+	"go.uber.org/zap"
 )
 
 type userHandler struct {
@@ -49,6 +51,7 @@ func (u *userHandler) Get(c *gin.Context) {
 		errs.Fail(c, err)
 		return
 	}
+	logger.L.Debug("获取用户", zap.Any("用户", user))
 	userVO := convert.UserToVO(&user)
 	errs.Success(c, userVO)
 }

@@ -33,7 +33,7 @@ func UserFromDTO(userVO *model.UserDTO) *model.User {
 		Website:  userVO.Website,
 	}
 	if b, err := time.ParseInLocation("2006-01-02", userVO.Birthdate, time.Local); err == nil {
-		res.Birthdate = &b
+		res.Birthdate = b
 	}
 	return res
 }
@@ -51,7 +51,7 @@ func UserToVO(user *model.User) *model.UserVO {
 		Bio:         user.Bio,
 		Location:    user.Location,
 		Website:     user.Website,
-		Birthdate:   *user.Birthdate,
+		Birthdate:   user.Birthdate,
 		PostCount:   user.PostCount,
 		FriendCount: user.FriendCount,
 		Role:        user.Role,
