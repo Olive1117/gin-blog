@@ -69,12 +69,13 @@ func ArticleFromDTO(articleVO *model.ArticleDTO) *model.Article {
 		Desc:    articleVO.Desc,
 		Content: articleVO.Content,
 		State:   articleVO.State,
+		Slug:    articleVO.Slug,
 		Category: model.Category{
 			Name: articleVO.CategoryName,
 		},
 		ImageCount: articleVO.ImageCount,
 	}
-	var taglist = make([]model.Tag, len(articleVO.TagNames))
+	var taglist = make([]model.Tag, 0, len(articleVO.TagNames))
 	for _, tag := range articleVO.TagNames {
 		taglist = append(taglist, model.Tag{Name: tag})
 	}
@@ -95,11 +96,12 @@ func ArticleToVO(article *model.Article) *model.ArticleVO {
 		CreatedAt:    article.CreatedAt,
 		UpdatedAt:    article.UpdatedAt,
 		ShortID:      article.ShortID,
+		Slug:         article.Slug,
 		CategoryName: article.Category.Name,
 		WordCount:    article.WordCount,
 		ImageCount:   article.ImageCount,
 	}
-	var taglist = make([]string, len(article.Tags))
+	var taglist = make([]string, 0, len(article.Tags))
 	for _, tag := range article.Tags {
 		taglist = append(taglist, tag.Name)
 	}
@@ -116,7 +118,7 @@ func ArticleFromQuery(articleQuery *model.ArticleQuery) *model.Article {
 		Title:    articleQuery.Title,
 		State:    articleQuery.State,
 	}
-	var taglist = make([]model.Tag, len(articleQuery.TagNames))
+	var taglist = make([]model.Tag, 0, len(articleQuery.TagNames))
 	for _, tag := range articleQuery.TagNames {
 		taglist = append(taglist, model.Tag{Name: tag})
 	}

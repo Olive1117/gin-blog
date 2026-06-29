@@ -34,13 +34,13 @@ type User struct {
 	Password string `json:"-" gorm:"type:varchar(255);not null;default:'';comment:密码"`
 
 	// 基本资料
-	Nickname  string    `json:"nickname" gorm:"type:varchar(50);default:'';comment:昵称"`  // 对应 name
-	Avatar    string    `json:"avatar" gorm:"type:varchar(255);default:'';comment:头像"`   // 对应 profile_image_url
-	Banner    string    `json:"banner" gorm:"type:varchar(255);default:'';comment:背景"`   // 对应 profile_banner_url
-	Bio       string    `json:"bio" gorm:"type:text;comment:个人简介"`                       // 对应 description，改为 text 类型更保险
-	Location  string    `json:"location" gorm:"type:varchar(100);default:'';comment:地址"` // 所在地
-	Website   string    `json:"website" gorm:"type:varchar(255);default:'';comment:网站"`  // 个人网站
-	Birthdate time.Time `json:"birthdate" gorm:"type:date;comment:生日"`                   // 生日
+	Nickname  string    `json:"nickname" gorm:"type:varchar(50);default:'';comment:昵称"`     // 对应 name
+	Avatar    string    `json:"avatar" gorm:"type:varchar(255);default:'';comment:头像"`      // 对应 profile_image_url
+	Banner    string    `json:"banner" gorm:"type:varchar(255);default:'';comment:背景"`      // 对应 profile_banner_url
+	Bio       string    `json:"bio" gorm:"type:text;comment:个人简介"`                          // 对应 description，改为 text 类型更保险
+	Location  string    `json:"location" gorm:"type:varchar(100);default:'';comment:地址"`    // 所在地
+	Website   string    `json:"website" gorm:"type:varchar(255);default:'';comment:网站"`     // 个人网站
+	Birthdate time.Time `json:"birthdate" gorm:"type:date;default:'1000-01-01';comment:生日"` // 生日
 
 	// 统计数据 (如果你想学推特做缓存计数)
 	PostCount   int `json:"post_count" gorm:"type:int(10) unsigned;not null;default:0;comment:文章数量"`   // 对应 statuses_count

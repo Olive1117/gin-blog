@@ -11,6 +11,7 @@ type ArticleVO struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	ShortID   string    `json:"short_id" gorm:"-"`
+	Slug      string    `json:"slug"`
 
 	CategoryName string `json:"category"`
 

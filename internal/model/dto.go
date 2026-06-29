@@ -15,6 +15,7 @@ type ArticleDTO struct {
 	Desc    string `json:"desc"`
 	Content string `json:"content"`
 	State   *int8  `json:"state"`
+	Slug    string `json:"slug"`
 
 	CategoryName string `json:"category"`
 

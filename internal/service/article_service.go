@@ -74,6 +74,7 @@ func (a *articleService) Create(c context.Context, article *model.Article) error
 			Title:      article.Title,
 			Desc:       article.Desc,
 			Content:    article.Content,
+			Slug:       article.Slug,
 			CategoryID: category.ID,
 			Tags:       tags,
 			WordCount:  utf8.RuneCountInString(article.Content),
