@@ -8,7 +8,6 @@ import (
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cast"
-	"go.uber.org/zap"
 )
 
 type tagHandler struct {
@@ -28,7 +27,7 @@ func (th *tagHandler) Create(c *gin.Context) {
 		errs.Fail(c, errs.ErrInvalidParam)
 		return
 	}
-	logger.FromContext(cx).Debug("创建标签", zap.Any("标签", tag))
+	logger.DebugContext(cx, "创建标签", logger.Any("标签", tag))
 
 	if err := th.service.Create(cx, &tag); err != nil {
 		errs.Fail(c, err)
@@ -47,7 +46,7 @@ func (th *tagHandler) List(c *gin.Context) {
 		errs.Fail(c, errs.ErrInvalidParam)
 		return
 	}
-	logger.FromContext(cx).Debug("获取标签列表", zap.Any("过滤器", filter))
+	logger.DebugContext(cx, "获取标签列表", logger.Any("过滤器", filter))
 
 	tags, total, err := th.service.List(cx, page, pageSize, &filter)
 	if err != nil {
@@ -66,7 +65,7 @@ func (th *tagHandler) List(c *gin.Context) {
 func (th *tagHandler) Get(c *gin.Context) {
 	cx := c.Request.Context()
 	id := cast.ToInt64(c.Param("id"))
-	logger.FromContext(cx).Debug("获取标签", zap.Int64("标签ID", id))
+	logger.DebugContext(cx, "获取标签", logger.Int64("标签ID", id))
 
 	tag, err := th.service.Get(cx, id)
 	if err != nil {
@@ -80,7 +79,7 @@ func (th *tagHandler) Get(c *gin.Context) {
 func (th *tagHandler) Delete(c *gin.Context) {
 	cx := c.Request.Context()
 	id := cast.ToInt64(c.Param("id"))
-	logger.FromContext(cx).Debug("删除标签", zap.Int64("标签ID", id))
+	logger.DebugContext(cx, "删除标签", logger.Int64("标签ID", id))
 
 	if err := th.service.Delete(cx, id); err != nil {
 		errs.Fail(c, err)
@@ -97,7 +96,7 @@ func (th *tagHandler) Update(c *gin.Context) {
 		errs.Fail(c, errs.ErrInvalidParam)
 		return
 	}
-	logger.FromContext(cx).Debug("更新标签", zap.Any("标签", tag))
+	logger.DebugContext(cx, "更新标签", logger.Any("标签", tag))
 	if err := th.service.Update(cx, &tag, id); err != nil {
 		errs.Fail(c, err)
 		return

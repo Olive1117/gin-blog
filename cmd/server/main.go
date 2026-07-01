@@ -10,17 +10,16 @@ import (
 	"github.com/Olive1117/gin-blog/pkg/jwt"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 func main() {
-	logger.NewLogger(config.GlobalConfig.Server.LogPath, config.GlobalConfig.Server.LogLevel)
+	logger.SetLogger(logger.NewZapLogger(config.GlobalConfig.Server.LogPath, config.GlobalConfig.Server.LogLevel))
 
 	gin.SetMode(config.GlobalConfig.Base.RunMode)
 	jwtHandler := jwt.NewJWT(config.GlobalConfig.App.JwtSecret, config.GlobalConfig.App.JwtIssuer)
 	DB, err := database.NewMySQLClient(config.GlobalConfig.MySQL)
 	if err != nil {
-		logger.L.Error("MySQL连接失败", zap.Error(err))
+		logger.Error("MySQL连接失败", logger.Err(err))
 	}
 	gormTransaction := database.NewgormTransaction(DB)
 	r := gin.New()

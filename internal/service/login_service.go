@@ -7,7 +7,6 @@ import (
 	"github.com/Olive1117/gin-blog/internal/repository"
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/logger"
-	"go.uber.org/zap"
 )
 
 type authService struct {
@@ -23,14 +22,14 @@ func NewAuthService(store repository.AuthRepo, jwt model.JWTHandler) AuthService
 }
 
 func (l *authService) Auth(c context.Context, req *model.AuthRequest) (*model.AuthResponse, error) {
-	logger.FromContext(c).Debug("登录业务代码")
+	logger.DebugContext(c, "登录业务代码")
 	id, err := l.Repo.CheckAuth(c, req.Username, req.Password)
 	if err != nil {
 		return nil, err
 	}
 	token, expiresAt, err := l.jwt.GenerateToken(id, req.Username)
 	if err != nil {
-		logger.FromContext(c).Warn(errs.ErrAuthToken.Message, zap.Error(err))
+		logger.WarnContext(c, errs.ErrAuthToken.Message, logger.Err(err))
 		return nil, errs.ErrAuthToken
 	}
 	res := &model.AuthResponse{

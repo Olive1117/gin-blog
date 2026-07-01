@@ -1,13 +1,11 @@
 package idgen
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/bwmarrin/snowflake"
-	"go.uber.org/zap"
 )
 
 var node *snowflake.Node
@@ -20,11 +18,7 @@ func init() {
 	}
 	nodeID, err := strconv.ParseInt(nodeIDStr, 10, 64)
 	if err != nil {
-		if logger.L != nil {
-			logger.L.Error("环境变量 NODE_ID 格式错误", zap.Error(err))
-		} else {
-			fmt.Printf("Warning: NODE_ID [%s] invalid, fallback to node 0\n", nodeIDStr)
-		}
+		logger.Error("环境变量 NODE_ID 格式错误", logger.Err(err))
 		node = initSnowflake(0)
 	} else {
 		node = initSnowflake(nodeID)

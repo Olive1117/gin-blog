@@ -6,7 +6,6 @@ import (
 
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/logger"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -31,7 +30,7 @@ func (b *baseRepo[T]) FindAll(c context.Context, page, pageSize int, entity *T, 
 	}
 	var total int64
 	if err := db.Model(new(T)).Count(&total).Error; err != nil {
-		logger.FromContext(c).Error("获取记录总数失败", zap.Error(err))
+		logger.ErrorContext(c, "获取记录总数失败", logger.Err(err))
 		return nil, 0, err
 	}
 	var entities []T
@@ -39,10 +38,10 @@ func (b *baseRepo[T]) FindAll(c context.Context, page, pageSize int, entity *T, 
 	err := db.Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&entities).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.FromContext(c).Warn("记录未找到")
+			logger.WarnContext(c, "记录未找到")
 			return entities, total, errs.ErrNotFound
 		}
-		logger.FromContext(c).Error("获取记录失败", zap.Error(err))
+		logger.ErrorContext(c, "获取记录失败", logger.Err(err))
 		return nil, 0, err
 	}
 	return entities, total, nil
@@ -58,10 +57,10 @@ func (b *baseRepo[T]) FindById(c context.Context, id int64, preloads ...string) 
 	err := db.Where("id = ?", id).First(&entity).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.FromContext(c).Warn("记录未找到", zap.Int64("id", id))
+			logger.WarnContext(c, "记录未找到", logger.Int64("id", id))
 			return entity, errs.ErrNotFound
 		}
-		logger.FromContext(c).Error("获取记录失败", zap.Error(err))
+		logger.ErrorContext(c, "获取记录失败", logger.Err(err))
 		return entity, err
 	}
 	return entity, nil

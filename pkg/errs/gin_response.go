@@ -7,7 +7,6 @@ import (
 
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type Response struct {
@@ -40,9 +39,9 @@ func Fail(ctx *gin.Context, err error) {
 		return
 	}
 	// 如果是未知错误，返回 500
-	logger.FromContext(ctx).Error("服务器内部错误",
-		zap.Error(err),
-		zap.String("stack", string(debug.Stack())), // 生产环境可关闭
+	logger.ErrorContext(ctx, "服务器内部错误",
+		logger.Err(err),
+		logger.String("stack", string(debug.Stack())), // 生产环境可关闭
 	)
 	ctx.JSON(http.StatusInternalServerError, Response{
 		Code: 500,
