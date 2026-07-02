@@ -3,7 +3,6 @@ package model
 import "time"
 
 type ArticleVO struct {
-	ID        int64     `json:"id,string"`
 	Title     string    `json:"title"`
 	Desc      string    `json:"desc"`
 	Content   string    `json:"content"`

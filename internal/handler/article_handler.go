@@ -41,13 +41,7 @@ func (a *articleHandler) Create(c *gin.Context) {
 }
 func (a *articleHandler) Delete(c *gin.Context) {
 	cx := c.Request.Context()
-	var id int64
-	param := c.Param("id")
-	if utils.IsShortID(param) {
-		id = utils.DecodeByOBID(param)
-	} else {
-		id = cast.ToInt64(param)
-	}
+	id := utils.ParseID(c.Param("id"))
 
 	err := a.service.Delete(cx, id)
 	if err != nil {
@@ -58,13 +52,8 @@ func (a *articleHandler) Delete(c *gin.Context) {
 }
 func (a *articleHandler) Get(c *gin.Context) {
 	cx := c.Request.Context()
-	var id int64
-	param := c.Param("id")
-	if utils.IsShortID(param) {
-		id = utils.DecodeByOBID(param)
-	} else {
-		id = cast.ToInt64(param)
-	}
+
+	id := utils.ParseID(c.Param("id"))
 	logger.DebugContext(cx, "获取文章", logger.Int64("id", id))
 
 	article, err := a.service.Get(cx, id)
@@ -82,7 +71,7 @@ func (a *articleHandler) Update(c *gin.Context) {
 		articleDTO model.ArticleDTO
 		article    model.Article
 	)
-	id := cast.ToInt64(c.Param("id"))
+	id := utils.ParseID(c.Param("id"))
 	logger.DebugContext(cx, "文章id", logger.Int64("id", id))
 	err := c.ShouldBindJSON(&articleDTO)
 	if err != nil {

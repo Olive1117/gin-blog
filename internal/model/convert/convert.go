@@ -88,7 +88,6 @@ func ArticleToVO(article *model.Article) *model.ArticleVO {
 		return nil
 	}
 	res := &model.ArticleVO{
-		ID:           article.ID,
 		Title:        article.Title,
 		Desc:         article.Desc,
 		Content:      article.Content,

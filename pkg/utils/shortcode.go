@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/btcsuite/btcutil/base58"
+	"github.com/spf13/cast"
 )
 
 func EncodeByOBID(id int64) string {
@@ -31,4 +32,12 @@ func DecodeByOBID(obID string) int64 {
 }
 func IsShortID(identifier string) bool {
 	return strings.HasPrefix(identifier, "OB")
+}
+
+// ParseID 统一解析路由参数中的 ID（支持短 ID 和普通 int64）
+func ParseID(param string) int64 {
+	if IsShortID(param) {
+		return DecodeByOBID(param)
+	}
+	return cast.ToInt64(param)
 }
