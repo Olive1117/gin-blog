@@ -3,27 +3,9 @@ package model
 import (
 	"time"
 
-	"github.com/Olive1117/gin-blog/pkg/idgen"
 	"github.com/Olive1117/gin-blog/pkg/utils"
 	"gorm.io/gorm"
 )
-
-type BaseModel struct {
-	ID        int64          `gorm:"primaryKey;autoIncrement:false" json:"id,string"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index:,composite:deletedat" json:"-"`
-	CreatedBy int64          `gorm:"default:0;comment:创建者ID"`
-	UpdatedBy int64          `gorm:"default:0;comment:修改者ID"`
-	DeletedBy int64          `gorm:"default:0;comment:删除者ID"`
-}
-
-func (b *BaseModel) BeforeCreate(tx *gorm.DB) (err error) {
-	if b.ID == 0 {
-		b.ID = idgen.NextID()
-	}
-	return
-}
 
 type User struct {
 	BaseModel

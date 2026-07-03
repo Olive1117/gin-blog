@@ -51,3 +51,11 @@ type UserDTO struct {
 	Website   string `json:"website"`
 	Birthdate string `json:"birthdate"`
 }
+
+type FriendLinkDTO struct {
+	Name        string `json:"name"`
+	URL         string `json:"url"`
+	Logo        string `json:"logo"`
+	Description string `json:"description"`
+	Status      *int8  `json:"status"`
+}

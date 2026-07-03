@@ -24,42 +24,36 @@ func (th *tagHandler) Create(c *gin.Context) {
 	cx := c.Request.Context()
 	var tag model.Tag
 	if err := c.ShouldBindJSON(&tag); err != nil {
-		errs.Fail(c, errs.ErrInvalidParam)
+		Fail(c, errs.ErrInvalidParam)
 		return
 	}
 	logger.DebugContext(cx, "创建标签", logger.Any("标签", tag))
 
 	if err := th.service.Create(cx, &tag); err != nil {
-		errs.Fail(c, err)
+		Fail(c, err)
 		return
 	}
 	tagVO := convert.TagToVO(&tag)
-	errs.Success(c, tagVO)
+	Success(c, tagVO)
 }
 
 func (th *tagHandler) List(c *gin.Context) {
 	cx := c.Request.Context()
 	var filter model.Tag
-	page := cast.ToInt(c.DefaultQuery("page", "1"))
-	pageSize := cast.ToInt(c.DefaultQuery("page_size", "10"))
+	pageQue := model.PageQuery{Page: cast.ToInt(c.DefaultQuery("page", "1")), PageSize: cast.ToInt(c.DefaultQuery("page_size", "10"))}
 	if err := c.ShouldBindQuery(&filter); err != nil {
-		errs.Fail(c, errs.ErrInvalidParam)
+		Fail(c, errs.ErrInvalidParam)
 		return
 	}
 	logger.DebugContext(cx, "获取标签列表", logger.Any("过滤器", filter))
 
-	tags, total, err := th.service.List(cx, page, pageSize, &filter)
+	pageRes, err := th.service.List(cx, pageQue, &filter)
 	if err != nil {
-		errs.Fail(c, err)
+		Fail(c, err)
 		return
 	}
-	tagDTOs := convert.MapSlice(tags, convert.TagToVO)
-	errs.Success(c, gin.H{
-		"list":      tagDTOs,
-		"total":     total,
-		"page":      page,
-		"page_size": pageSize,
-	})
+	tagVOs := convert.MapSlice(pageRes.List, convert.TagToVO)
+	Success(c, NewPageResponse(tagVOs, pageRes.Total, pageQue))
 }
 
 func (th *tagHandler) Get(c *gin.Context) {
@@ -69,11 +63,11 @@ func (th *tagHandler) Get(c *gin.Context) {
 
 	tag, err := th.service.Get(cx, id)
 	if err != nil {
-		errs.Fail(c, err)
+		Fail(c, err)
 		return
 	}
 	tagVO := convert.TagToVO(&tag)
-	errs.Success(c, tagVO)
+	Success(c, tagVO)
 }
 
 func (th *tagHandler) Delete(c *gin.Context) {
@@ -82,10 +76,10 @@ func (th *tagHandler) Delete(c *gin.Context) {
 	logger.DebugContext(cx, "删除标签", logger.Int64("标签ID", id))
 
 	if err := th.service.Delete(cx, id); err != nil {
-		errs.Fail(c, err)
+		Fail(c, err)
 		return
 	}
-	errs.Success(c, nil)
+	Success(c, nil)
 }
 
 func (th *tagHandler) Update(c *gin.Context) {
@@ -93,13 +87,13 @@ func (th *tagHandler) Update(c *gin.Context) {
 	id := cast.ToInt64(c.Param("id"))
 	var tag model.Tag
 	if err := c.ShouldBindJSON(&tag); err != nil {
-		errs.Fail(c, errs.ErrInvalidParam)
+		Fail(c, errs.ErrInvalidParam)
 		return
 	}
 	logger.DebugContext(cx, "更新标签", logger.Any("标签", tag))
 	if err := th.service.Update(cx, &tag, id); err != nil {
-		errs.Fail(c, err)
+		Fail(c, err)
 		return
 	}
-	errs.Success(c, nil)
+	Success(c, nil)
 }

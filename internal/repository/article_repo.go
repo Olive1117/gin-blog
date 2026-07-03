@@ -22,40 +22,28 @@ func (r *articleRepo) CreateArticle(c context.Context, article *model.Article) e
 	return r.Conn(c).Omit("Tags.*").Create(article).Error
 }
 
-func (r *articleRepo) FindAllArticle(c context.Context, page, pageSize int, entity *model.Article) ([]model.Article, int64, error) {
+func (r *articleRepo) List(c context.Context, que model.PageQuery, entity *model.Article) (model.PageResult[model.Article], error) {
 	db := r.Conn(c)
-	if entity.Category.Name != "" {
-		db = db.Joins("Category").Where("Category.name = ?", entity.Category.Name)
-	}
-	// 构建查询条件
-	if len(entity.Tags) > 0 {
-		tagNames := make([]string, len(entity.Tags))
-		for i, tag := range entity.Tags {
-			tagNames[i] = tag.Name
-		}
-		// 通过子查询过滤包含指定标签的文章
-		tagSubQuery := r.Conn(c).Model(&model.Tag{}).Select("id").Where("name IN (?)", tagNames)
-		articleSubQuery := r.Conn(c).Model(&model.ArticleTag{}).Select("article_id").Where("tag_id IN (?)", tagSubQuery)
-		db = db.Model(&model.Article{}).Where("Article.id IN (?)", articleSubQuery)
-	}
-	// 基础过滤条件
 	if entity != nil {
+		if entity.Category.Name != "" {
+			db = db.Joins("Category").Where("Category.name = ?", entity.Category.Name)
+		}
+		// 构建查询条件
+		if len(entity.Tags) > 0 {
+			tagNames := make([]string, len(entity.Tags))
+			for i, tag := range entity.Tags {
+				tagNames[i] = tag.Name
+			}
+			// 通过子查询过滤包含指定标签的文章
+			tagSubQuery := r.Conn(c).Model(&model.Tag{}).Select("id").Where("name IN (?)", tagNames)
+			articleSubQuery := r.Conn(c).Model(&model.ArticleTag{}).Select("article_id").Where("tag_id IN (?)", tagSubQuery)
+			db = db.Where("Article.id IN (?)", articleSubQuery)
+		}
+		// 基础过滤条件
 		db = db.Where(entity)
 	}
-	var tatol int64
-	if err := db.Model(&model.Article{}).Count(&tatol).Error; err != nil {
-		return nil, 0, err
-	}
-	var articles []model.Article
-	offset := (page - 1) * pageSize
-	if err := db.Preload("Category").Preload("Tags").
-		Omit("Content").
-		Order("created_at DESC").
-		Offset(offset).Limit(pageSize).
-		Find(&articles).Error; err != nil {
-		return nil, 0, err
-	}
-	return articles, tatol, nil
+	db = db.Preload("Category").Preload("Tags").Omit("Content").Order("created_at DESC")
+	return Paginate[model.Article](db, que)
 }
 func (r *articleRepo) UpdateArticle(c context.Context, article *model.Article) error {
 	return r.Conn(c).Transaction(func(tx *gorm.DB) error {
@@ -106,7 +94,7 @@ func (r *articleRepo) GetArticleStats(c context.Context) (*model.ArticleStatsVO,
 	var stats model.ArticleStatsVO
 	stats.TotalByCategory = make(map[string]int64)
 	stats.TotalByTag = make(map[string]int64)
-	if err := r.Conn(c).Model(&model.Article{}).Where("state = ?", 1).Count(&stats.Total).Error; err != nil {
+	if err := r.Conn(c).Model(&model.Article{}).Where("status = ?", 1).Count(&stats.Total).Error; err != nil {
 		return nil, err
 	}
 	var categoryRows []struct {
@@ -116,7 +104,7 @@ func (r *articleRepo) GetArticleStats(c context.Context) (*model.ArticleStatsVO,
 	if err := r.Conn(c).
 		Model(&model.Article{}).
 		Select("category.name, COUNT(*) as count").
-		Joins("left join category on category.id = article.category_id and category.state = ? and category.deleted_at is null", 1).
+		Joins("left join category on category.id = article.category_id and category.status = ? and category.deleted_at is null", 1).
 		Group("category.name").
 		Scan(&categoryRows).Error; err != nil {
 		return nil, err
@@ -132,7 +120,7 @@ func (r *articleRepo) GetArticleStats(c context.Context) (*model.ArticleStatsVO,
 		Model(&model.Article{}).
 		Select("t.name, COUNT(*) as count").
 		Joins("left join article_tag as at on article.id = at.article_id").
-		Joins("left join tag as t on t.id = at.tag_id and t.state = ? and t.deleted_at is null", 1).
+		Joins("left join tag as t on t.id = at.tag_id and t.status = ? and t.deleted_at is null", 1).
 		Group("t.name").
 		Scan(&tagRows).Error; err != nil {
 		return nil, err

@@ -68,3 +68,10 @@ type TagVO struct {
 	Name   string `json:"name"`
 	Status *int8  `json:"status"`
 }
+type FriendLinkVO struct {
+	ID          int64  `json:"id,string"`
+	Name        string `json:"name"`
+	URL         string `json:"url"`
+	Logo        string `json:"logo"`
+	Description string `json:"description"`
+}

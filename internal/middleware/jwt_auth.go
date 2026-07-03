@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/Olive1117/gin-blog/internal/handler"
 	"github.com/Olive1117/gin-blog/internal/model"
 	"github.com/Olive1117/gin-blog/pkg/database"
 	"github.com/Olive1117/gin-blog/pkg/errs"
@@ -17,7 +18,7 @@ func JwtAuth(j model.JWTHandler) gin.HandlerFunc {
 		parse := strings.SplitN(c.GetHeader("Authorization"), " ", 2)
 		if !(parse[0] == "Bearer" && len(parse) == 2) {
 			logger.WarnContext(c.Request.Context(), errs.ErrAuthCheckTokenFail.Message)
-			errs.Fail(c, errs.ErrAuthCheckTokenFail)
+			handler.Fail(c, errs.ErrAuthCheckTokenFail)
 			c.Abort()
 			return
 		}
@@ -26,10 +27,10 @@ func JwtAuth(j model.JWTHandler) gin.HandlerFunc {
 		if err != nil {
 			if errors.Is(err, jwt.ErrTokenExpired) {
 				logger.WarnContext(c.Request.Context(), errs.ErrAuthCheckTokenTimeout.Message, logger.Err(err))
-				errs.Fail(c, errs.ErrAuthCheckTokenTimeout)
+				handler.Fail(c, errs.ErrAuthCheckTokenTimeout)
 			} else {
 				logger.WarnContext(c.Request.Context(), errs.ErrAuthCheckTokenFail.Message, logger.Err(err))
-				errs.Fail(c, errs.ErrAuthCheckTokenFail)
+				handler.Fail(c, errs.ErrAuthCheckTokenFail)
 			}
 			c.Abort()
 			return

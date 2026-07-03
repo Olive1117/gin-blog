@@ -70,6 +70,9 @@ func CloseDB(db *gorm.DB) {
 type gormTransaction struct {
 	db *gorm.DB
 }
+type transactionKey struct{}
+
+var KTransaction = transactionKey{}
 
 func NewgormTransaction(db *gorm.DB) *gormTransaction {
 	return &gormTransaction{
@@ -79,7 +82,7 @@ func NewgormTransaction(db *gorm.DB) *gormTransaction {
 
 func (g *gormTransaction) Transaction(c context.Context, fn func(c context.Context) error) error {
 	return g.db.WithContext(c).Transaction(func(tx *gorm.DB) error {
-		newc := context.WithValue(c, "tx", tx)
+		newc := context.WithValue(c, KTransaction, tx)
 		return fn(newc)
 	})
 }

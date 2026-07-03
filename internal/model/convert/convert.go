@@ -146,3 +146,29 @@ func TagToVO(tag *model.Tag) *model.TagVO {
 		Status: tag.Status,
 	}
 }
+
+func FriendLinkFromDTO(friendlinkDTO *model.FriendLinkDTO) *model.FriendLink {
+	if friendlinkDTO == nil {
+		return nil
+	}
+	return &model.FriendLink{
+		Name:        friendlinkDTO.Name,
+		URL:         friendlinkDTO.URL,
+		Logo:        friendlinkDTO.Logo,
+		Description: friendlinkDTO.Description,
+		Status:      friendlinkDTO.Status,
+	}
+}
+
+func FriendLinkToVO(friendlink *model.FriendLink) *model.FriendLinkVO {
+	if friendlink == nil {
+		return nil
+	}
+	return &model.FriendLinkVO{
+		ID:          friendlink.ID,
+		Name:        friendlink.Name,
+		URL:         friendlink.URL,
+		Logo:        friendlink.Logo,
+		Description: friendlink.Description,
+	}
+}

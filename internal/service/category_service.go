@@ -30,9 +30,8 @@ func (cs *categoryService) Delete(ctx context.Context, id int64) error {
 func (cs *categoryService) Get(ctx context.Context, id int64) (model.Category, error) {
 	return cs.Repo.FindById(ctx, id)
 }
-func (cs *categoryService) List(ctx context.Context, page int, pageSize int, filter *model.Category) ([]model.Category, int64, error) {
-	//TODO 这里应该写模糊查询，需要改baseRepo
-	return cs.Repo.FindAll(ctx, page, pageSize, filter)
+func (cs *categoryService) List(ctx context.Context, que model.PageQuery, filter *model.Category) (model.PageResult[model.Category], error) {
+	return cs.Repo.List(ctx, que, filter)
 }
 func (cs *categoryService) Update(ctx context.Context, category *model.Category, id int64) error {
 	existId, err := cs.Repo.ExistByName(ctx, category.Name)

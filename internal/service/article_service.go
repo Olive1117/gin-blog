@@ -49,19 +49,19 @@ func (a *articleService) Update(c context.Context, article *model.Article, id in
 	})
 }
 
-func (a *articleService) Create(c context.Context, article *model.Article) error {
+func (a *articleService) Create(c context.Context, dto *model.Article) error {
 	logger.DebugContext(c, "创建文章业务")
 	return a.Ts.Transaction(c, func(c context.Context) error {
 		// 1. 同步分类
 		logger.DebugContext(c, "同步分类")
-		category, err := a.CategoryRepo.SyncCategory(c, article.Category.Name)
+		category, err := a.CategoryRepo.SyncCategory(c, dto.Category.Name)
 		if err != nil {
 			return err
 		}
 		// 2. 同步标签
 		logger.DebugContext(c, "同步标签")
-		tagsName := make([]string, len(article.Tags))
-		for i, tag := range article.Tags {
+		tagsName := make([]string, len(dto.Tags))
+		for i, tag := range dto.Tags {
 			tagsName[i] = tag.Name
 		}
 		tags, err := a.TagRepo.SyncTags(c, tagsName)
@@ -70,13 +70,13 @@ func (a *articleService) Create(c context.Context, article *model.Article) error
 		}
 		// 3. 构建实体
 		article := &model.Article{
-			Title:      article.Title,
-			Desc:       article.Desc,
-			Content:    article.Content,
-			Slug:       article.Slug,
+			Title:      dto.Title,
+			Desc:       dto.Desc,
+			Content:    dto.Content,
+			Slug:       dto.Slug,
 			CategoryID: category.ID,
 			Tags:       tags,
-			WordCount:  utf8.RuneCountInString(article.Content),
+			WordCount:  utf8.RuneCountInString(dto.Content),
 		}
 		logger.DebugContext(c, "即将插入文章", logger.Any("文章", article))
 		// 4. 调用 Create 方法
@@ -127,8 +127,8 @@ func (a *articleService) Delete(c context.Context, id int64) error {
 	})
 }
 
-func (a *articleService) List(c context.Context, page, pageSize int, filter *model.Article) ([]model.Article, int64, error) {
-	return a.Repo.FindAllArticle(c, page, pageSize, filter)
+func (a *articleService) List(c context.Context, que model.PageQuery, filter *model.Article) (model.PageResult[model.Article], error) {
+	return a.Repo.List(c, que, filter)
 }
 
 func (a *articleService) Stats(c context.Context) (*model.ArticleStatsVO, error) {

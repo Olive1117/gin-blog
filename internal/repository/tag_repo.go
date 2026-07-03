@@ -12,10 +12,9 @@ type tagRepo struct {
 	BaseRepo[model.Tag]
 }
 
-func NewTagRepo(db *gorm.DB) TagRepo {
-	return &tagRepo{
-		BaseRepo: NewBaseRepo[model.Tag](db),
-	}
+// List implements [TagRepo].
+func (r *tagRepo) List(ctx context.Context, que model.PageQuery, filter *model.Tag) (model.PageResult[model.Tag], error) {
+	return Paginate[model.Tag](r.Conn(ctx).Where(filter), que)
 }
 
 // 同步标签
@@ -58,4 +57,10 @@ func (r *tagRepo) ExistByName(ctx context.Context, name string) (int64, error) {
 		return 0, err // 表示数据库报错
 	}
 	return tag.ID, nil
+}
+
+func NewTagRepo(db *gorm.DB) TagRepo {
+	return &tagRepo{
+		BaseRepo: NewBaseRepo[model.Tag](db),
+	}
 }

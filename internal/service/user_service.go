@@ -61,8 +61,8 @@ func (ts *userService) Get(c context.Context, id int64) (model.User, error) {
 	user.PostCount = cast.ToInt(postCount)
 	return user, nil
 }
-func (ts *userService) List(c context.Context, page int, pageSize int, filter *model.User) ([]model.User, int64, error) {
-	return ts.Repo.FindAll(c, page, pageSize, filter)
+func (ts *userService) List(c context.Context, que model.PageQuery, filter *model.User) (model.PageResult[model.User], error) {
+	return ts.Repo.List(c, que, filter)
 }
 func (ts *userService) Update(c context.Context, user *model.User, id int64) error {
 	user.Password = "" // 不允许更新密码
@@ -83,25 +83,24 @@ func (ts *userService) Update(c context.Context, user *model.User, id int64) err
 	}
 	return ts.Repo.Update(c, id, user)
 }
-func (ts *userService) Login(c context.Context, req *model.LoginRequest) (*model.AuthResponse, error) {
+func (ts *userService) Login(c context.Context, req model.LoginRequest) (model.AuthResponse, error) {
 	logger.DebugContext(c, "登录业务代码")
+	var res model.AuthResponse
 	user, err := ts.Repo.GetByUsername(c, req.Username)
 	if err != nil {
-		return nil, err
+		return res, err
 	}
 	if ok := utils.CheckPassword(req.Password, user.Password); !ok {
-		return nil, errs.ErrAuth
+		return res, errs.ErrAuth
 	}
 	token, expiresAt, err := ts.jwt.GenerateToken(user.ID, req.Username)
 	if err != nil {
 		logger.WarnContext(c, errs.ErrAuthToken.Message, logger.Err(err))
-		return nil, errs.ErrAuthToken
+		return res, errs.ErrAuthToken
 	}
-	res := &model.AuthResponse{
-		AccessToken: token,
-		ExpiresAt:   expiresAt,
-		TokenType:   "Bearer",
-	}
+	res.AccessToken = token
+	res.ExpiresAt = expiresAt
+	res.TokenType = "Bearer"
 	return res, nil
 }
 func (ts *userService) ChangePassword(c context.Context, username string, oldPassword string, newPassword string) error {
@@ -119,5 +118,5 @@ func (ts *userService) ChangePassword(c context.Context, username string, oldPas
 		return errs.ErrRegisterFail
 	}
 	user.Password = hashPassword
-	return ts.Repo.Update(c, user.ID, &user)
+	return ts.Repo.Update(c, user.ID, user)
 }
