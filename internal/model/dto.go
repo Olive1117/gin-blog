@@ -20,7 +20,7 @@ type ArticleDTO struct {
 	Title   string `json:"title"`
 	Desc    string `json:"desc"`
 	Content string `json:"content"`
-	State   *int8  `json:"state"`
+	Status  *int8  `json:"status"`
 	Slug    string `json:"slug"`
 
 	CategoryName string `json:"category"`
@@ -34,7 +34,7 @@ type ArticleQuery struct {
 	Title        string   `form:"title"`
 	CategoryName string   `form:"category"`
 	TagNames     []string `form:"tags"`
-	State        *int8    `form:"state"`
+	Status       *int8    `form:"status"`
 }
 
 type UserDTO struct {

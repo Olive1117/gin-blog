@@ -33,7 +33,7 @@ func UserFromDTO(userVO *model.UserDTO) *model.User {
 		Website:  userVO.Website,
 	}
 	if b, err := time.ParseInLocation("2006-01-02", userVO.Birthdate, time.Local); err == nil {
-		res.Birthdate = b
+		res.Birthdate = &b
 	}
 	return res
 }
@@ -55,7 +55,7 @@ func UserToVO(user *model.User) *model.UserVO {
 		PostCount:   user.PostCount,
 		FriendCount: user.FriendCount,
 		Role:        user.Role,
-		State:       user.State,
+		Status:      user.Status,
 		CreatedAt:   user.CreatedAt,
 	}
 }
@@ -68,7 +68,7 @@ func ArticleFromDTO(articleVO *model.ArticleDTO) *model.Article {
 		Title:   articleVO.Title,
 		Desc:    articleVO.Desc,
 		Content: articleVO.Content,
-		State:   articleVO.State,
+		Status:  articleVO.Status,
 		Slug:    articleVO.Slug,
 		Category: model.Category{
 			Name: articleVO.CategoryName,
@@ -91,7 +91,7 @@ func ArticleToVO(article *model.Article) *model.ArticleVO {
 		Title:        article.Title,
 		Desc:         article.Desc,
 		Content:      article.Content,
-		State:        article.State,
+		Status:       article.Status,
 		CreatedAt:    article.CreatedAt,
 		UpdatedAt:    article.UpdatedAt,
 		ShortID:      article.ShortID,
@@ -115,7 +115,7 @@ func ArticleFromQuery(articleQuery *model.ArticleQuery) *model.Article {
 	res := &model.Article{
 		Category: model.Category{Name: articleQuery.CategoryName},
 		Title:    articleQuery.Title,
-		State:    articleQuery.State,
+		Status:   articleQuery.Status,
 	}
 	var taglist = make([]model.Tag, 0, len(articleQuery.TagNames))
 	for _, tag := range articleQuery.TagNames {
@@ -130,9 +130,9 @@ func CategoryToVO(category *model.Category) *model.CategoryVO {
 		return nil
 	}
 	return &model.CategoryVO{
-		ID:    category.ID,
-		Name:  category.Name,
-		State: category.State,
+		ID:     category.ID,
+		Name:   category.Name,
+		Status: category.Status,
 	}
 }
 
@@ -141,8 +141,8 @@ func TagToVO(tag *model.Tag) *model.TagVO {
 		return nil
 	}
 	return &model.TagVO{
-		ID:    tag.ID,
-		Name:  tag.Name,
-		State: tag.State,
+		ID:     tag.ID,
+		Name:   tag.Name,
+		Status: tag.Status,
 	}
 }

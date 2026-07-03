@@ -6,7 +6,7 @@ type ArticleVO struct {
 	Title     string    `json:"title"`
 	Desc      string    `json:"desc"`
 	Content   string    `json:"content"`
-	State     *int8     `json:"state"`
+	Status    *int8     `json:"status"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	ShortID   string    `json:"short_id" gorm:"-"`
@@ -34,20 +34,20 @@ type UserVO struct {
 	Email    string `json:"email"`
 
 	// 基本资料
-	Nickname  string    `json:"nickname"`
-	Avatar    string    `json:"avatar"`
-	Banner    string    `json:"banner"`
-	Bio       string    `json:"bio"`
-	Location  string    `json:"location"`
-	Website   string    `json:"website"`
-	Birthdate time.Time `json:"birthdate"`
+	Nickname  string     `json:"nickname"`
+	Avatar    string     `json:"avatar"`
+	Banner    string     `json:"banner"`
+	Bio       string     `json:"bio"`
+	Location  string     `json:"location"`
+	Website   string     `json:"website"`
+	Birthdate *time.Time `json:"birthdate"`
 
 	// 统计数据 (如果你想学推特做缓存计数)
 	PostCount   int `json:"post_count"`
 	FriendCount int `json:"friend_count"`
 	// 权限控制
-	Role  string `json:"role"`
-	State *int8  `json:"state"`
+	Role   string `json:"role"`
+	Status *int8  `json:"status"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -59,12 +59,12 @@ type ArticleStatsVO struct {
 	TotalByTag      map[string]int64 `json:"total_by_tag"`
 }
 type CategoryVO struct {
-	ID    int64  `json:"id,string"`
-	Name  string `json:"name"`
-	State *int8  `json:"state"`
+	ID     int64  `json:"id,string"`
+	Name   string `json:"name"`
+	Status *int8  `json:"status"`
 }
 type TagVO struct {
-	ID    int64  `json:"id,string"`
-	Name  string `json:"name"`
-	State *int8  `json:"state"`
+	ID     int64  `json:"id,string"`
+	Name   string `json:"name"`
+	Status *int8  `json:"status"`
 }
