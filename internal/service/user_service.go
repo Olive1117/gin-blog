@@ -6,18 +6,22 @@ import (
 	"github.com/Olive1117/gin-blog/internal/model"
 	"github.com/Olive1117/gin-blog/internal/repository"
 	"github.com/Olive1117/gin-blog/pkg/errs"
+	"github.com/Olive1117/gin-blog/pkg/logger"
+	"github.com/Olive1117/gin-blog/pkg/utils"
 	"github.com/spf13/cast"
 )
 
 type userService struct {
 	Repo        repository.UserRepo
 	ArticleRepo repository.ArticleRepo
+	jwt         model.JWTHandler
 }
 
-func NewUserService(repo repository.UserRepo, articleRepo repository.ArticleRepo) UserService {
+func NewUserService(repo repository.UserRepo, articleRepo repository.ArticleRepo, jwt model.JWTHandler) UserService {
 	return &userService{
 		Repo:        repo,
 		ArticleRepo: articleRepo,
+		jwt:         jwt,
 	}
 }
 
@@ -34,6 +38,12 @@ func (ts *userService) Create(c context.Context, user *model.User) error {
 		}
 		return err
 	}
+	hashPassword, err := utils.HashPassword(user.Password)
+	if err != nil {
+		logger.ErrorContext(c, "密码加密失败", logger.Err(err))
+		return errs.ErrRegisterFail
+	}
+	user.Password = hashPassword
 	return ts.Repo.Create(c, user)
 }
 func (ts *userService) Delete(c context.Context, id int64) error {
@@ -51,10 +61,11 @@ func (ts *userService) Get(c context.Context, id int64) (model.User, error) {
 	user.PostCount = cast.ToInt(postCount)
 	return user, nil
 }
-func (ts *userService) List(c context.Context, page int, pageSize int, filter *model.User) ([]model.User, int64, error) {
-	return ts.Repo.FindAll(c, page, pageSize, filter)
+func (ts *userService) List(c context.Context, que model.PageQuery, filter *model.User) (model.PageResult[model.User], error) {
+	return ts.Repo.List(c, que, filter)
 }
 func (ts *userService) Update(c context.Context, user *model.User, id int64) error {
+	user.Password = "" // 不允许更新密码
 	users, err := ts.Repo.FindByUniqueKeys(c, user.Username, user.Email)
 	if err != nil {
 		return err
@@ -71,4 +82,41 @@ func (ts *userService) Update(c context.Context, user *model.User, id int64) err
 		}
 	}
 	return ts.Repo.Update(c, id, user)
+}
+func (ts *userService) Login(c context.Context, req model.LoginRequest) (model.AuthResponse, error) {
+	logger.DebugContext(c, "登录业务代码")
+	var res model.AuthResponse
+	user, err := ts.Repo.GetByUsername(c, req.Username)
+	if err != nil {
+		return res, err
+	}
+	if ok := utils.CheckPassword(req.Password, user.Password); !ok {
+		return res, errs.ErrAuth
+	}
+	token, expiresAt, err := ts.jwt.GenerateToken(user.ID, req.Username)
+	if err != nil {
+		logger.WarnContext(c, errs.ErrAuthToken.Message, logger.Err(err))
+		return res, errs.ErrAuthToken
+	}
+	res.AccessToken = token
+	res.ExpiresAt = expiresAt
+	res.TokenType = "Bearer"
+	return res, nil
+}
+func (ts *userService) ChangePassword(c context.Context, username string, oldPassword string, newPassword string) error {
+	user, err := ts.Repo.GetByUsername(c, username)
+	user.Password = ""
+	if err != nil {
+		return err
+	}
+	if ok := utils.CheckPassword(oldPassword, user.Password); !ok {
+		return errs.ErrPasswordIncorrect
+	}
+	hashPassword, err := utils.HashPassword(newPassword)
+	if err != nil {
+		logger.ErrorContext(c, "密码加密失败", logger.Err(err))
+		return errs.ErrRegisterFail
+	}
+	user.Password = hashPassword
+	return ts.Repo.Update(c, user.ID, user)
 }

@@ -12,10 +12,10 @@ type categoryRepo struct {
 	BaseRepo[model.Category]
 }
 
-func NewCategoryRepo(db *gorm.DB) CategoryRepo {
-	return &categoryRepo{
-		BaseRepo: NewBaseRepo[model.Category](db),
-	}
+// List implements [CategoryRepo].
+func (r *categoryRepo) List(ctx context.Context, que model.PageQuery, filter *model.Category) (model.PageResult[model.Category], error) {
+	db := r.Conn(ctx).Where(filter)
+	return Paginate[model.Category](db, que)
 }
 
 // 同步分类
@@ -35,4 +35,10 @@ func (r *categoryRepo) ExistByName(ctx context.Context, name string) (int64, err
 		return 0, err // 表示数据库报错
 	}
 	return category.ID, nil
+}
+
+func NewCategoryRepo(db *gorm.DB) CategoryRepo {
+	return &categoryRepo{
+		BaseRepo: NewBaseRepo[model.Category](db),
+	}
 }

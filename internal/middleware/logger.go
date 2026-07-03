@@ -12,7 +12,6 @@ import (
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 func GinLogger() gin.HandlerFunc {
@@ -24,9 +23,9 @@ func GinLogger() gin.HandlerFunc {
 			traceID = uuid
 		}
 		// 注入traceID供logger或其他使用
-		newctx := logger.SetTraceID(c.Request.Context(), traceID)
+		newctx := logger.SetTraceIDCtx(c.Request.Context(), traceID)
 		// 生成每个请求唯一*zap.logger，防止重复生成多个*zap.logger子实例
-		newctx = logger.SetCurrentUser(newctx, logger.L.With(zap.String("trace_id", traceID)))
+		newctx = logger.SetLoggerCtx(newctx, logger.With(logger.String("trace_id", traceID)))
 		c.Request = c.Request.WithContext(newctx)
 
 		start := time.Now()
@@ -37,16 +36,16 @@ func GinLogger() gin.HandlerFunc {
 
 		cost := time.Since(start)
 		userID, _ := database.GetUserID(c.Request.Context())
-		logger.FromContext(c.Request.Context()).Info("HTTP Request",
-			zap.Int64("user", userID),
-			zap.Int("status", c.Writer.Status()),
-			zap.String("method", c.Request.Method),
-			zap.String("path", path),
-			zap.String("query", query),
-			zap.String("ip", c.ClientIP()),
-			zap.String("user-agent", c.Request.UserAgent()),
-			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
-			zap.Duration("cost", cost),
+		logger.InfoContext(c.Request.Context(), "HTTP Request",
+			logger.Int64("user", userID),
+			logger.Int("status", c.Writer.Status()),
+			logger.String("method", c.Request.Method),
+			logger.String("path", path),
+			logger.String("query", query),
+			logger.String("ip", c.ClientIP()),
+			logger.String("user-agent", c.Request.UserAgent()),
+			logger.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
+			logger.Duration("cost", cost),
 		)
 	}
 }
@@ -71,9 +70,9 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 				// DumpRequest 以 HTTP/1.x 连线形式返回给定的请求
 				httpRequest, _ := httputil.DumpRequest(c.Request, false)
 				if brokenPipe {
-					logger.L.Error(c.Request.URL.Path,
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
+					logger.Error(c.Request.URL.Path,
+						logger.Any("error", err),
+						logger.String("request", string(httpRequest)),
 					)
 					// 如果连接死了，我们就不能给它写状态
 					c.Error(err.(error))
@@ -82,16 +81,16 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 				}
 
 				if stack {
-					logger.L.Error("[Recovery from panic]",
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
-						// zap.String("stack", string(debug.Stack())), // 返回调用它的goroutine的格式化堆栈跟踪。
-						zap.Stack("stack"),
+					logger.Error("[Recovery from panic]",
+						logger.Any("error", err),
+						logger.String("request", string(httpRequest)),
+						// logger.String("stack", string(debug.Stack())), // 返回调用它的goroutine的格式化堆栈跟踪。
+						logger.Stack("stack"),
 					)
 				} else {
-					logger.L.Error("[Recovery from panic]",
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
+					logger.Error("[Recovery from panic]",
+						logger.Any("error", err),
+						logger.String("request", string(httpRequest)),
 					)
 				}
 				// 调用 `Abort()` 并使用指定的状态代码写入标头。

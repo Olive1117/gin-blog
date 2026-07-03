@@ -2,13 +2,12 @@ package handler
 
 import (
 	"github.com/Olive1117/gin-blog/internal/model"
+	"github.com/Olive1117/gin-blog/internal/model/convert"
 	"github.com/Olive1117/gin-blog/internal/service"
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/copier"
 	"github.com/spf13/cast"
-	"go.uber.org/zap"
 )
 
 type categoryHandler struct {
@@ -25,58 +24,49 @@ func (ch *categoryHandler) Create(c *gin.Context) {
 	cx := c.Request.Context()
 	var category model.Category
 	if err := c.ShouldBindJSON(&category); err != nil {
-		errs.Fail(c, errs.ErrInvalidParam)
+		Fail(c, errs.ErrInvalidParam)
 		return
 	}
-	logger.FromContext(cx).Debug("创建分类", zap.Any("分类", category))
+	logger.DebugContext(cx, "创建分类", logger.Any("分类", category))
 
 	if err := ch.service.Create(cx, &category); err != nil {
-		errs.Fail(c, err)
+		Fail(c, err)
 		return
 	}
-	var categoryDTO model.CategoryDTO
-	copier.CopyWithOption(&categoryDTO, &category, copier.Option{IgnoreEmpty: true})
-	errs.Success(c, categoryDTO)
+	categoryVO := convert.CategoryToVO(&category)
+	Success(c, categoryVO)
 }
 
 func (ch *categoryHandler) List(c *gin.Context) {
 	cx := c.Request.Context()
-	page := cast.ToInt(c.DefaultQuery("page", "1"))
-	pageSize := cast.ToInt(c.DefaultQuery("page_size", "10"))
+	pageQue := model.PageQuery{Page: cast.ToInt(c.DefaultQuery("page", "1")), PageSize: cast.ToInt(c.DefaultQuery("page_size", "10"))}
 	var filter model.Category
 	if err := c.ShouldBindQuery(&filter); err != nil {
-		errs.Fail(c, errs.ErrInvalidParam)
+		Fail(c, errs.ErrInvalidParam)
 		return
 	}
-	logger.FromContext(cx).Debug("获取分类列表", zap.Any("过滤器", filter))
+	logger.DebugContext(cx, "获取分类列表", logger.Any("过滤器", filter))
 
-	categories, total, err := ch.service.List(cx, page, pageSize, &filter)
+	pageRes, err := ch.service.List(cx, pageQue, &filter)
 	if err != nil {
-		errs.Fail(c, err)
+		Fail(c, err)
 		return
 	}
-	var categoryDTOs []model.CategoryDTO
-	copier.CopyWithOption(&categoryDTOs, &categories, copier.Option{IgnoreEmpty: true})
-	errs.Success(c, gin.H{
-		"list":      categoryDTOs,
-		"total":     total,
-		"page":      page,
-		"page_size": pageSize,
-	})
+	categoryVOs := convert.MapSlice(pageRes.List, convert.CategoryToVO)
+	Success(c, NewPageResponse(categoryVOs, pageRes.Total, pageQue))
 }
 
 func (ch *categoryHandler) Get(c *gin.Context) {
 	cx := c.Request.Context()
 	id := cast.ToInt64(c.Param("id"))
-	logger.FromContext(cx).Debug("获取分类详情", zap.Int64("分类ID", id))
+	logger.DebugContext(cx, "获取分类详情", logger.Int64("分类ID", id))
 	category, err := ch.service.Get(cx, id)
 	if err != nil {
-		errs.Fail(c, err)
+		Fail(c, err)
 		return
 	}
-	var categoryDTO model.CategoryDTO
-	copier.CopyWithOption(&categoryDTO, &category, copier.Option{IgnoreEmpty: true})
-	errs.Success(c, categoryDTO)
+	categoryVO := convert.CategoryToVO(&category)
+	Success(c, categoryVO)
 }
 
 func (ch *categoryHandler) Update(c *gin.Context) {
@@ -84,25 +74,25 @@ func (ch *categoryHandler) Update(c *gin.Context) {
 	id := cast.ToInt64(c.Param("id"))
 	var category model.Category
 	if err := c.ShouldBindJSON(&category); err != nil {
-		errs.Fail(c, errs.ErrInvalidParam)
+		Fail(c, errs.ErrInvalidParam)
 		return
 	}
-	logger.FromContext(cx).Debug("更新分类", zap.Any("分类", category))
+	logger.DebugContext(cx, "更新分类", logger.Any("分类", category))
 	if err := ch.service.Update(cx, &category, id); err != nil {
-		errs.Fail(c, err)
+		Fail(c, err)
 		return
 	}
-	errs.Success(c, nil)
+	Success(c, nil)
 }
 
 func (ch *categoryHandler) Delete(c *gin.Context) {
 	cx := c.Request.Context()
 	id := cast.ToInt64(c.Param("id"))
-	logger.FromContext(cx).Debug("删除分类", zap.Int64("分类ID", id))
+	logger.DebugContext(cx, "删除分类", logger.Int64("分类ID", id))
 	err := ch.service.Delete(cx, id)
 	if err != nil {
-		errs.Fail(c, err)
+		Fail(c, err)
 		return
 	}
-	errs.Success(c, nil)
+	Success(c, nil)
 }

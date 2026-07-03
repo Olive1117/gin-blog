@@ -4,38 +4,38 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/Olive1117/gin-blog/internal/handler"
 	"github.com/Olive1117/gin-blog/internal/model"
 	"github.com/Olive1117/gin-blog/pkg/database"
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/jwt"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 func JwtAuth(j model.JWTHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		parse := strings.SplitN(c.GetHeader("Authorization"), " ", 2)
 		if !(parse[0] == "Bearer" && len(parse) == 2) {
-			logger.FromContext(c.Request.Context()).Warn(errs.ErrAuthCheckTokenFail.Message)
-			errs.Fail(c, errs.ErrAuthCheckTokenFail)
+			logger.WarnContext(c.Request.Context(), errs.ErrAuthCheckTokenFail.Message)
+			handler.Fail(c, errs.ErrAuthCheckTokenFail)
 			c.Abort()
 			return
 		}
-		logger.FromContext(c.Request.Context()).Debug("检查token", zap.String("token", parse[1]))
+		logger.DebugContext(c.Request.Context(), "检查token", logger.String("token", parse[1]))
 		claims, err := j.ParseToken(parse[1])
 		if err != nil {
 			if errors.Is(err, jwt.ErrTokenExpired) {
-				logger.FromContext(c.Request.Context()).Warn(errs.ErrAuthCheckTokenTimeout.Message, zap.Error(err))
-				errs.Fail(c, errs.ErrAuthCheckTokenTimeout)
+				logger.WarnContext(c.Request.Context(), errs.ErrAuthCheckTokenTimeout.Message, logger.Err(err))
+				handler.Fail(c, errs.ErrAuthCheckTokenTimeout)
 			} else {
-				logger.FromContext(c.Request.Context()).Warn(errs.ErrAuthCheckTokenFail.Message, zap.Error(err))
-				errs.Fail(c, errs.ErrAuthCheckTokenFail)
+				logger.WarnContext(c.Request.Context(), errs.ErrAuthCheckTokenFail.Message, logger.Err(err))
+				handler.Fail(c, errs.ErrAuthCheckTokenFail)
 			}
 			c.Abort()
 			return
 		}
-		logger.FromContext(c.Request.Context()).Debug("注入当前用户id到上下文", zap.Int64("ID", claims.UserID))
+		logger.DebugContext(c.Request.Context(), "注入当前用户id到上下文", logger.Int64("ID", claims.UserID))
 		newctx := database.SetUserID(c.Request.Context(), claims.UserID)
 		c.Request = c.Request.WithContext(newctx)
 		c.Set("current_user", claims.UserID)

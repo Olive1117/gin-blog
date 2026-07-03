@@ -3,11 +3,12 @@ package handler
 import "github.com/gin-gonic/gin"
 
 type HandlerContainer struct {
-	Auth     AuthHandler
-	Article  ArticleHandler
-	Category CategoryHandler
-	Tag      TagHandler
-	User     UserHandler
+	Auth       AuthHandler
+	Article    ArticleHandler
+	Category   CategoryHandler
+	Tag        TagHandler
+	User       UserHandler
+	FriendLink friendlinkHandler
 }
 type BaseHandler interface {
 	Get(c *gin.Context)
@@ -32,4 +33,9 @@ type TagHandler interface {
 type UserHandler interface {
 	BaseHandler
 	GetMe(c *gin.Context)
+	Login(c *gin.Context)
+	ChangePassword(c *gin.Context)
+}
+type FriendLinkHandler interface {
+	BaseHandler
 }

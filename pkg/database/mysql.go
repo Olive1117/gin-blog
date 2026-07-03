@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/Olive1117/gin-blog/internal/model"
+	mylogger "github.com/Olive1117/gin-blog/pkg/logger"
+	"github.com/Olive1117/gin-blog/pkg/utils"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -68,6 +70,9 @@ func CloseDB(db *gorm.DB) {
 type gormTransaction struct {
 	db *gorm.DB
 }
+type transactionKey struct{}
+
+var KTransaction = transactionKey{}
 
 func NewgormTransaction(db *gorm.DB) *gormTransaction {
 	return &gormTransaction{
@@ -77,7 +82,7 @@ func NewgormTransaction(db *gorm.DB) *gormTransaction {
 
 func (g *gormTransaction) Transaction(c context.Context, fn func(c context.Context) error) error {
 	return g.db.WithContext(c).Transaction(func(tx *gorm.DB) error {
-		newc := context.WithValue(c, "tx", tx)
+		newc := context.WithValue(c, KTransaction, tx)
 		return fn(newc)
 	})
 }
@@ -104,10 +109,16 @@ func InitSchemaAndSeed(db *gorm.DB) {
 	var count int64
 	db.Model(&model.User{}).Where("username = ?", "admin").Count(&count)
 	if count == 0 {
+		HashPassword, err := utils.HashPassword("123456")
+		if err != nil {
+			mylogger.Error("初始用户密码加密失败", mylogger.Err(err))
+			return
+		}
 		db.Create(&model.User{
 			BaseModel: model.BaseModel{ID: 1},
 			Username:  "admin",
-			Password:  "123456", // 实际项目要加密
+			Password:  HashPassword,
+			Role:      "admin",
 		})
 	}
 }

@@ -21,7 +21,6 @@ const (
 	defaultDBHost     = "127.0.0.1"
 	defaultDBPort     = "3306"
 	defaultDBName     = "blog"
-	defaultDBPassword = ""
 	defaultDBCharset  = "utf8mb4"
 	defaultDBLogLevel = 4
 )
@@ -43,7 +42,6 @@ var GlobalConfig = &AllConfig{
 		Port:         defaultDBPort,
 		User:         defaultDBUser,
 		DBName:       defaultDBName,
-		Password:     defaultDBPassword,
 		Charset:      defaultDBCharset,
 		MaxIdleConns: 10,
 		MaxOpenConns: 100,

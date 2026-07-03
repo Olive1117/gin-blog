@@ -2,10 +2,10 @@ package database
 
 import (
 	"context"
+	"errors"
 	"reflect"
 
 	"github.com/Olive1117/gin-blog/pkg/logger"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -26,7 +26,7 @@ func (op *AuditPlugin) Initialize(db *gorm.DB) error {
 	// 获得大佬焚诀，得以正常运行（直接覆盖delete默认行为，具体见op.beforeDelete）
 	err = db.Callback().Delete().Before("gorm:delete").Register("audit:before_delete", op.beforeDelete)
 	if err != nil {
-		logger.L.Error("grom callback", zap.Error(err))
+		logger.Error("grom callback", logger.Err(err))
 		return err
 	}
 	return nil
@@ -38,10 +38,10 @@ func (op *AuditPlugin) beforeCreate(db *gorm.DB) {
 	}
 	id, ok := db.Statement.Context.Value(kUserID).(int64)
 	if !ok {
-		logger.L.Error("获取用户ID失败")
+		logger.Error("获取用户ID失败", logger.Err(errors.New("获取用户ID失败")))
 		return
 	}
-	logger.L.Debug("执行创建插件", zap.Int64("当前用户", id))
+	logger.Debug("执行创建插件", logger.Int64("当前用户", id))
 	// 设置 CreatedBy 和 UpdatedBy
 	createdBy := db.Statement.Schema.LookUpField("CreatedBy")
 	updatedBy := db.Statement.Schema.LookUpField("UpdatedBy")
@@ -75,10 +75,10 @@ func (op *AuditPlugin) beforeUpdate(db *gorm.DB) {
 	}
 	id, ok := db.Statement.Context.Value(kUserID).(int64)
 	if !ok {
-		logger.L.Error("获取用户ID失败")
+		logger.Error("获取用户ID失败", logger.Err(errors.New("获取用户ID失败")))
 		return
 	}
-	logger.L.Debug("执行更新插件", zap.Int64("id", id))
+	logger.Debug("执行更新插件", logger.Int64("id", id))
 	updatedBy := db.Statement.Schema.LookUpField("UpdatedBy")
 	switch db.Statement.ReflectValue.Kind() {
 	case reflect.Slice, reflect.Array:
@@ -104,7 +104,7 @@ func (op *AuditPlugin) beforeDelete(db *gorm.DB) {
 	}
 	id, ok := db.Statement.Context.Value(kUserID).(int64)
 	if !ok {
-		logger.L.Error("获取用户ID失败")
+		logger.Error("获取用户ID失败", logger.Err(errors.New("获取用户ID失败")))
 		return
 	}
 	_, hasDeletedBy := db.Statement.Schema.FieldsByName["DeletedBy"]
@@ -112,7 +112,7 @@ func (op *AuditPlugin) beforeDelete(db *gorm.DB) {
 	if !hasDeletedAt && !hasDeletedBy {
 		return
 	}
-	logger.L.Debug("执行删除插件", zap.Int64("id", id), zap.Bool("hasdeletedBy", hasDeletedAt), zap.Bool("hasdeletedBy", hasDeletedAt))
+	logger.Debug("执行删除插件", logger.Int64("id", id), logger.Bool("hasdeletedBy", hasDeletedAt), logger.Bool("hasdeletedBy", hasDeletedAt))
 
 	/*
 		gorm的软删除在执行时会直接创建sql语句更新deleted_at，默认会覆盖传入的其他更新字段（比如deleted_by）

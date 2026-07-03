@@ -7,7 +7,6 @@ import (
 	"github.com/Olive1117/gin-blog/internal/model"
 	"github.com/Olive1117/gin-blog/internal/repository"
 	"github.com/Olive1117/gin-blog/pkg/logger"
-	"go.uber.org/zap"
 )
 
 type articleService struct {
@@ -45,24 +44,24 @@ func (a *articleService) Update(c context.Context, article *model.Article, id in
 		article.Category = *category
 		article.Tags = tags
 		article.WordCount = utf8.RuneCountInString(article.Content)
-		logger.FromContext(c).Debug("更新文章业务", zap.Any("文章", article))
+		logger.DebugContext(c, "更新文章业务", logger.Any("文章", article))
 		return a.Repo.UpdateArticle(c, article)
 	})
 }
 
-func (a *articleService) Create(c context.Context, article *model.Article) error {
-	logger.FromContext(c).Debug("创建文章业务")
+func (a *articleService) Create(c context.Context, dto *model.Article) error {
+	logger.DebugContext(c, "创建文章业务")
 	return a.Ts.Transaction(c, func(c context.Context) error {
 		// 1. 同步分类
-		logger.FromContext(c).Debug("同步分类")
-		category, err := a.CategoryRepo.SyncCategory(c, article.Category.Name)
+		logger.DebugContext(c, "同步分类")
+		category, err := a.CategoryRepo.SyncCategory(c, dto.Category.Name)
 		if err != nil {
 			return err
 		}
 		// 2. 同步标签
-		logger.FromContext(c).Debug("同步标签")
-		tagsName := make([]string, len(article.Tags))
-		for i, tag := range article.Tags {
+		logger.DebugContext(c, "同步标签")
+		tagsName := make([]string, len(dto.Tags))
+		for i, tag := range dto.Tags {
 			tagsName[i] = tag.Name
 		}
 		tags, err := a.TagRepo.SyncTags(c, tagsName)
@@ -71,14 +70,15 @@ func (a *articleService) Create(c context.Context, article *model.Article) error
 		}
 		// 3. 构建实体
 		article := &model.Article{
-			Title:      article.Title,
-			Desc:       article.Desc,
-			Content:    article.Content,
+			Title:      dto.Title,
+			Desc:       dto.Desc,
+			Content:    dto.Content,
+			Slug:       dto.Slug,
 			CategoryID: category.ID,
 			Tags:       tags,
-			WordCount:  utf8.RuneCountInString(article.Content),
+			WordCount:  utf8.RuneCountInString(dto.Content),
 		}
-		logger.FromContext(c).Debug("即将插入文章", zap.Any("文章", article))
+		logger.DebugContext(c, "即将插入文章", logger.Any("文章", article))
 		// 4. 调用 Create 方法
 		return a.Repo.CreateArticle(c, article)
 	})
@@ -101,7 +101,7 @@ func (a *articleService) Delete(c context.Context, id int64) error {
 			return err
 		}
 		if count <= 1 {
-			logger.FromContext(c).Debug("删除文章业务 - 删除分类", zap.Int64("分类ID", article.CategoryID))
+			logger.DebugContext(c, "删除文章业务 - 删除分类", logger.Int64("分类ID", article.CategoryID))
 			if err := a.CategoryRepo.Delete(c, article.CategoryID); err != nil {
 				return err
 			}
@@ -117,7 +117,7 @@ func (a *articleService) Delete(c context.Context, id int64) error {
 		// 删除标签（如果没有任何文章使用该标签）
 		for tagID, count := range counts {
 			if count <= 1 {
-				logger.FromContext(c).Debug("删除文章业务 - 删除标签", zap.Int64("标签ID", tagID))
+				logger.DebugContext(c, "删除文章业务 - 删除标签", logger.Int64("标签ID", tagID))
 				if err := a.TagRepo.Delete(c, tagID); err != nil {
 					return err
 				}
@@ -127,10 +127,10 @@ func (a *articleService) Delete(c context.Context, id int64) error {
 	})
 }
 
-func (a *articleService) List(c context.Context, page, pageSize int, filter *model.Article) ([]model.Article, int64, error) {
-	return a.Repo.FindAllArticle(c, page, pageSize, filter)
+func (a *articleService) List(c context.Context, que model.PageQuery, filter *model.Article) (model.PageResult[model.Article], error) {
+	return a.Repo.List(c, que, filter)
 }
 
-func (a *articleService) Stats(c context.Context) (*model.ArticleStatsDTO, error) {
+func (a *articleService) Stats(c context.Context) (*model.ArticleStatsVO, error) {
 	return a.Repo.GetArticleStats(c)
 }

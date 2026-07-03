@@ -1,25 +1,20 @@
 package logger
 
 import (
-	"context"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-type traceIDKey struct{}
-type contextLoggerKey struct{}
+type zapLogger struct {
+	zap *zap.Logger
+}
 
-var kTraceID = traceIDKey{}
-var kContextLogger = contextLoggerKey{}
-var L *zap.Logger
-
-const TraceIDKey = "trace_id"
-
-func NewLogger(logPath string, level string) {
+func NewZapLogger(logPath string, level string) Logger {
 	writer := zapcore.AddSync(&lumberjack.Logger{
 		Filename:   logPath,
 		MaxSize:    100,
@@ -31,9 +26,9 @@ func NewLogger(logPath string, level string) {
 		zapcore.NewCore(NewJSONEncoder(), writer, getLevel(level)),
 		zapcore.NewCore(NewConsoleEncoder(), zapcore.AddSync(os.Stdout), getLevel(level)),
 	)
-	L = zap.New(core, zap.AddCaller())
-	zap.RedirectStdLog(L)
+	return &zapLogger{zap: zap.New(core, zap.AddCaller(), zap.AddCallerSkip(2))}
 }
+
 func NewJSONEncoder() zapcore.Encoder {
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
@@ -68,26 +63,46 @@ func getLevel(level string) zapcore.Level {
 	}
 }
 
-// FromContext 从 c 中提取 trace_id 并返回一个带字段的 zap.Logger
-func FromContext(c context.Context) *zap.Logger {
-	if c == nil {
-		return L
+func toZapFields(field Field) zap.Field {
+	switch v := field.Value.(type) {
+	case int:
+		return zap.Int(field.Key, v)
+	case int64:
+		return zap.Int64(field.Key, v)
+	case string:
+		return zap.String(field.Key, v)
+	case bool:
+		return zap.Bool(field.Key, v)
+	case error:
+		return zap.Error(v)
+	case time.Duration:
+		return zap.Duration(field.Key, v)
+	case stackMarker:
+		return zap.Stack(field.Key)
+	default:
+		return zap.Any(field.Key, v)
 	}
-	// 先从context获取*zap.logger实例，没有才进行创建逻辑
-	logger, ok := c.Value(kContextLogger).(*zap.Logger)
-	if ok {
-		return logger
+}
+func toZapFieldsSlice(fields []Field) []zap.Field {
+	zapFields := make([]zap.Field, 0, len(fields))
+	for _, field := range fields {
+		zapFields = append(zapFields, toZapFields(field))
 	}
-	traceID, ok := c.Value(kTraceID).(string)
-	if ok && traceID != "" {
-		return L.With(zap.String(TraceIDKey, traceID))
-	}
-	return L
+	return zapFields
 }
 
-func SetTraceID(c context.Context, traceID string) context.Context {
-	return context.WithValue(c, kTraceID, traceID)
+func (z *zapLogger) Debug(msg string, fields ...Field) {
+	z.zap.Debug(msg, toZapFieldsSlice(fields)...)
 }
-func SetCurrentUser(c context.Context, logger *zap.Logger) context.Context {
-	return context.WithValue(c, kContextLogger, logger)
+func (z *zapLogger) Info(msg string, fields ...Field) {
+	z.zap.Info(msg, toZapFieldsSlice(fields)...)
+}
+func (z *zapLogger) Warn(msg string, fields ...Field) {
+	z.zap.Warn(msg, toZapFieldsSlice(fields)...)
+}
+func (z *zapLogger) Error(msg string, fields ...Field) {
+	z.zap.Error(msg, toZapFieldsSlice(fields)...)
+}
+func (z *zapLogger) With(fields ...Field) Logger {
+	return &zapLogger{zap: z.zap.With(toZapFieldsSlice(fields)...)}
 }
