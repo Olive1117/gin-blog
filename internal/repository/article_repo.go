@@ -37,7 +37,7 @@ func (r *articleRepo) List(c context.Context, que model.PageQuery, entity *model
 			// 通过子查询过滤包含指定标签的文章
 			tagSubQuery := r.Conn(c).Model(&model.Tag{}).Select("id").Where("name IN (?)", tagNames)
 			articleSubQuery := r.Conn(c).Model(&model.ArticleTag{}).Select("article_id").Where("tag_id IN (?)", tagSubQuery)
-			db = db.Where("Article.id IN (?)", articleSubQuery)
+			db = db.Where("article.id IN (?)", articleSubQuery)
 		}
 		// 基础过滤条件
 		db = db.Where(entity)
