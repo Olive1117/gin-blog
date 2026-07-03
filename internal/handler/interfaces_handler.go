@@ -32,4 +32,6 @@ type TagHandler interface {
 type UserHandler interface {
 	BaseHandler
 	GetMe(c *gin.Context)
+	Login(c *gin.Context)
+	ChangePassword(c *gin.Context)
 }

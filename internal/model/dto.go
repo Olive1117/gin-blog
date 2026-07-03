@@ -1,13 +1,19 @@
 package model
 
-// AuthRequest 登录请求
-type AuthRequest struct {
+// LoginRequest 登录请求
+type LoginRequest struct {
 	// 使用 binding 标签进行初步参数校验
 	Username string `json:"username" binding:"required,min=1,max=32"`
 	Password string `json:"password" binding:"required,min=6,max=64"`
 	// 可选：验证码标识
-	CaptchaID   string `json:"captcha_id" binding:"omitempty"`
-	CaptchaCode string `json:"captcha_code" binding:"omitempty"`
+	// CaptchaID   string `json:"captcha_id" binding:"omitempty"`
+	// CaptchaCode string `json:"captcha_code" binding:"omitempty"`
+}
+
+type ChangePasswordRequest struct {
+	Username    string `json:"username" binding:"required,min=1,max=32"`
+	OldPassword string `json:"old_password" binding:"required,min=6,max=64"`
+	NewPassword string `json:"new_password" binding:"required,min=6,max=64"`
 }
 
 type ArticleDTO struct {

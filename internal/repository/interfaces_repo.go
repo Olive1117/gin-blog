@@ -25,9 +25,6 @@ type ArticleRepo interface {
 	CountArticleByTagIDs(c context.Context, tagIDs []int64) (map[int64]int64, error)
 	GetArticleStats(c context.Context) (*model.ArticleStatsVO, error)
 }
-type AuthRepo interface {
-	CheckAuth(c context.Context, username string, password string) (int64, error)
-}
 type TagRepo interface {
 	BaseRepo[model.Tag]
 	SyncTags(ctx context.Context, names []string) ([]model.Tag, error)
@@ -41,4 +38,5 @@ type CategoryRepo interface {
 type UserRepo interface {
 	BaseRepo[model.User]
 	FindByUniqueKeys(ctx context.Context, username string, email string) ([]model.User, error)
+	GetByUsername(ctx context.Context, username string) (*model.User, error)
 }

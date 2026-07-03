@@ -108,3 +108,36 @@ func (u *userHandler) GetMe(c *gin.Context) {
 	userVO := convert.UserToVO(&user)
 	errs.Success(c, userVO)
 }
+func (u *userHandler) Login(c *gin.Context) {
+	cx := c.Request.Context()
+	logger.DebugContext(cx, "登录")
+	var req model.LoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.WarnContext(cx, errs.ErrInvalidParam.Message, logger.Err(err))
+		errs.Fail(c, errs.ErrInvalidParam)
+		return
+	}
+	res, err := u.Service.Login(cx, &req)
+	if err != nil {
+		logger.WarnContext(cx, "登录失败", logger.Err(err))
+		errs.Fail(c, err)
+		return
+	}
+	errs.Success(c, res)
+}
+func (u *userHandler) ChangePassword(c *gin.Context) {
+	cx := c.Request.Context()
+	var req model.ChangePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.WarnContext(cx, "修改密码参数无效", logger.Err(err))
+		errs.Fail(c, errs.ErrInvalidParam)
+		return
+	}
+	err := u.Service.ChangePassword(cx, req.Username, req.OldPassword, req.NewPassword)
+	if err != nil {
+		logger.WarnContext(cx, "修改密码失败", logger.Err(err))
+		errs.Fail(c, err)
+		return
+	}
+	errs.Success(c, req.NewPassword)
+}

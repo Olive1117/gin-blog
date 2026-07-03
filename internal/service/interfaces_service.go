@@ -17,9 +17,6 @@ type ArticleService interface {
 	BaseService[model.Article]
 	Stats(c context.Context) (*model.ArticleStatsVO, error)
 }
-type AuthService interface {
-	Auth(c context.Context, req *model.AuthRequest) (*model.AuthResponse, error)
-}
 type CategoryService interface {
 	BaseService[model.Category]
 }
@@ -28,4 +25,6 @@ type TagService interface {
 }
 type UserService interface {
 	BaseService[model.User]
+	Login(c context.Context, req *model.LoginRequest) (*model.AuthResponse, error)
+	ChangePassword(c context.Context, username string, oldPassword string, newPassword string) error
 }

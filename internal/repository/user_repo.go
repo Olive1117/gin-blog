@@ -22,3 +22,11 @@ func (u *userRepo) FindByUniqueKeys(ctx context.Context, username string, email 
 	err := u.Conn(ctx).Select("id", "username", "email").Where("username = ? OR email = ?", username, email).Find(&users).Error
 	return users, err
 }
+func (u *userRepo) GetByUsername(ctx context.Context, username string) (*model.User, error) {
+	var user model.User
+	err := u.Conn(ctx).Model(&model.User{}).Where("username = ?", username).First(&user).Error
+	if err != nil {
+		return &model.User{}, err
+	}
+	return &user, nil
+}

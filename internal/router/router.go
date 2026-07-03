@@ -30,7 +30,7 @@ func InitRouter(router *gin.Engine, handlerContainer *handler.HandlerContainer, 
 				"data": "",
 			})
 		})
-		public.POST("/login", handlerContainer.Auth.Auth)
+		public.POST("/login", handlerContainer.User.Login)
 		articles := public.Group("/articles")
 		{
 			articles.GET("", handlerContainer.Article.List)
@@ -46,6 +46,10 @@ func InitRouter(router *gin.Engine, handlerContainer *handler.HandlerContainer, 
 		{
 			tags.GET("/:id", handlerContainer.Tag.Get)
 			tags.GET("", handlerContainer.Tag.List)
+		}
+		users := public.Group("/users")
+		{
+			users.POST("", handlerContainer.User.Create)
 		}
 	}
 
@@ -88,7 +92,7 @@ func InitRouter(router *gin.Engine, handlerContainer *handler.HandlerContainer, 
 
 		users := private.Group("/users")
 		{
-			users.POST("", handlerContainer.User.Create)
+			// users.POST("", handlerContainer.User.Create)
 			users.DELETE("/:id", handlerContainer.User.Delete)
 			users.PUT("/:id", handlerContainer.User.Update)
 			users.GET("/:id", handlerContainer.User.Get)
