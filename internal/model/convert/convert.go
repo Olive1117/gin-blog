@@ -8,7 +8,7 @@ import (
 
 func MapSlice[T any, R any](src []T, fn func(*T) *R) []R {
 	if len(src) == 0 {
-		return nil
+		return []R{}
 	}
 	res := make([]R, 0, len(src))
 	for i := range src {
