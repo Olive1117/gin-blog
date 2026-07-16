@@ -11,6 +11,7 @@ import (
 	"github.com/Olive1117/gin-blog/pkg/jwt"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/cast"
 )
 
 func JwtAuth(j model.JWTHandler) gin.HandlerFunc {
@@ -35,10 +36,11 @@ func JwtAuth(j model.JWTHandler) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		logger.DebugContext(c.Request.Context(), "注入当前用户id到上下文", logger.Int64("ID", claims.UserID))
-		newctx := database.SetUserID(c.Request.Context(), claims.UserID)
+		userid := cast.ToInt64(claims.Subject)
+		logger.DebugContext(c.Request.Context(), "注入当前用户id到上下文", logger.Int64("ID", userid))
+		newctx := database.SetUserID(c.Request.Context(), userid)
 		c.Request = c.Request.WithContext(newctx)
-		c.Set("current_user", claims.UserID)
+		c.Set("current_user", userid)
 		c.Next()
 	}
 }

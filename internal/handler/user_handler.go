@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/Olive1117/gin-blog/internal/model"
 	"github.com/Olive1117/gin-blog/internal/model/convert"
 	"github.com/Olive1117/gin-blog/internal/service"
@@ -107,18 +109,31 @@ func (u *userHandler) GetMe(c *gin.Context) {
 func (u *userHandler) Login(c *gin.Context) {
 	cx := c.Request.Context()
 	logger.DebugContext(cx, "登录")
+	var userInfo = model.RefreshTokens{
+		Device_info: c.GetHeader("X-Forwarded-For"),
+		Ip_address:  c.GetHeader("X-Real-Ip"),
+	}
 	var req model.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		logger.WarnContext(cx, errs.ErrInvalidParam.Message, logger.Err(err))
 		Fail(c, errs.ErrInvalidParam)
 		return
 	}
-	res, err := u.Service.Login(cx, req)
+	res, refreshCookie, err := u.Service.Login(cx, req, userInfo)
 	if err != nil {
 		logger.WarnContext(cx, "登录失败", logger.Err(err))
 		Fail(c, err)
 		return
 	}
+	c.SetCookieData(&http.Cookie{
+		Name:  "__refresh_token",
+		Value: refreshCookie.RefreshToken,
+		// Path:     "/",                     // 限制路径，只允许刷新接口访问
+		Expires:  refreshCookie.ExpiresAt, // 7天
+		HttpOnly: true,                    // 禁止JS访问（防XSS）
+		Secure:   true,                    // 仅HTTPS（防中间人攻击）
+		SameSite: http.SameSiteLaxMode,    // 严格模式，仅同站请求和外站导航携带
+	})
 	Success(c, res)
 }
 func (u *userHandler) ChangePassword(c *gin.Context) {
@@ -136,4 +151,20 @@ func (u *userHandler) ChangePassword(c *gin.Context) {
 		return
 	}
 	Success(c, req.NewPassword)
+}
+func (u *userHandler) RefreshToken(c *gin.Context) {
+	cx := c.Request.Context()
+	refreshToken, err := c.Cookie("__refresh_token")
+	if err != nil {
+		logger.WarnContext(cx, "获取刷新token失败", logger.Err(err))
+		Fail(c, errs.ErrNotExistRefreshToken)
+		return
+	}
+	res, err := u.Service.RefreshToken(cx, refreshToken)
+	if err != nil {
+		logger.WarnContext(cx, "获取刷新token失败", logger.Err(err))
+		Fail(c, err)
+		return
+	}
+	Success(c, res)
 }

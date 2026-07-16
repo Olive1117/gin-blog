@@ -9,7 +9,8 @@ import (
 
 // jwt解码工具
 type JWTHandler interface {
-	GenerateToken(userID int64, username string) (string, time.Time, error)
+	GenerateAccessToken(userID string, roles []string) (string, time.Time, error)
+	GenerateRefreshToken(userID string, roles []string, tokenID string) (string, time.Time, error)
 	ParseToken(tokenString string) (*jwt.Claims, error)
 }
 

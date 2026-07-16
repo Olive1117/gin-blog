@@ -105,6 +105,12 @@ func InitSchemaAndSeed(db *gorm.DB) {
 	if !db.Migrator().HasTable(&model.User{}) {
 		db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户管理'").AutoMigrate(&model.User{})
 	}
+	if !db.Migrator().HasTable(&model.FriendLink{}) {
+		db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='友链'").AutoMigrate(&model.FriendLink{})
+	}
+	if !db.Migrator().HasTable(&model.RefreshTokens{}) {
+		db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='刷新令牌白名单'").AutoMigrate(&model.RefreshTokens{})
+	}
 	// 插入默认 admin 用户
 	var count int64
 	db.Model(&model.User{}).Where("username = ?", "admin").Count(&count)

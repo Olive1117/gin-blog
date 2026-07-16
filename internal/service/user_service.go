@@ -2,26 +2,30 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/Olive1117/gin-blog/internal/model"
 	"github.com/Olive1117/gin-blog/internal/repository"
 	"github.com/Olive1117/gin-blog/pkg/errs"
 	"github.com/Olive1117/gin-blog/pkg/logger"
 	"github.com/Olive1117/gin-blog/pkg/utils"
+	"github.com/google/uuid"
 	"github.com/spf13/cast"
 )
 
 type userService struct {
-	Repo        repository.UserRepo
-	ArticleRepo repository.ArticleRepo
-	jwt         model.JWTHandler
+	Repo             repository.UserRepo
+	ArticleRepo      repository.ArticleRepo
+	RefreshTokenRepo repository.RefreshTokenRepo
+	jwt              model.JWTHandler
 }
 
-func NewUserService(repo repository.UserRepo, articleRepo repository.ArticleRepo, jwt model.JWTHandler) UserService {
+func NewUserService(repo repository.UserRepo, articleRepo repository.ArticleRepo, refreshtokenRepo repository.RefreshTokenRepo, jwt model.JWTHandler) UserService {
 	return &userService{
-		Repo:        repo,
-		ArticleRepo: articleRepo,
-		jwt:         jwt,
+		Repo:             repo,
+		ArticleRepo:      articleRepo,
+		RefreshTokenRepo: refreshtokenRepo,
+		jwt:              jwt,
 	}
 }
 
@@ -83,25 +87,40 @@ func (ts *userService) Update(c context.Context, user *model.User, id int64) err
 	}
 	return ts.Repo.Update(c, id, user)
 }
-func (ts *userService) Login(c context.Context, req model.LoginRequest) (model.AuthResponse, error) {
+func (ts *userService) Login(c context.Context, req model.LoginRequest, userInfo model.RefreshTokens) (model.AuthResponse, model.RefreshCookie, error) {
 	logger.DebugContext(c, "登录业务代码")
-	var res model.AuthResponse
+	var Authres model.AuthResponse
+	var Refres model.RefreshCookie
 	user, err := ts.Repo.GetByUsername(c, req.Username)
 	if err != nil {
-		return res, err
+		return Authres, Refres, err
 	}
 	if ok := utils.CheckPassword(req.Password, user.Password); !ok {
-		return res, errs.ErrAuth
+		return Authres, Refres, errs.ErrAuth
 	}
-	token, expiresAt, err := ts.jwt.GenerateToken(user.ID, req.Username)
+	id := uuid.NewString()
+	// TODO 等数据库改成Role列表后需要修改
+	accessToken, accessExpiresAt, err := ts.jwt.GenerateAccessToken(cast.ToString(user.ID), []string{user.Role})
+	refreshToken, refreshExpiresAt, err := ts.jwt.GenerateRefreshToken(cast.ToString(user.ID), []string{user.Role}, id)
 	if err != nil {
 		logger.WarnContext(c, errs.ErrAuthToken.Message, logger.Err(err))
-		return res, errs.ErrAuthToken
+		return Authres, Refres, errs.ErrAuthToken
 	}
-	res.AccessToken = token
-	res.ExpiresAt = expiresAt
-	res.TokenType = "Bearer"
-	return res, nil
+	userInfo.UserID = user.ID
+	userInfo.Jti = id
+	userInfo.Expires_at = &refreshExpiresAt
+	if ts.RefreshTokenRepo.RevokeByUser(c, user.ID) != nil {
+		return Authres, Refres, err
+	}
+	if ts.RefreshTokenRepo.Create(c, userInfo) != nil {
+		return Authres, Refres, err
+	}
+	Authres.AccessToken = accessToken
+	Authres.ExpiresAt = accessExpiresAt
+	Authres.TokenType = "Bearer"
+	Refres.RefreshToken = refreshToken
+	Refres.ExpiresAt = refreshExpiresAt
+	return Authres, Refres, nil
 }
 func (ts *userService) ChangePassword(c context.Context, username string, oldPassword string, newPassword string) error {
 	user, err := ts.Repo.GetByUsername(c, username)
@@ -119,4 +138,23 @@ func (ts *userService) ChangePassword(c context.Context, username string, oldPas
 	}
 	user.Password = hashPassword
 	return ts.Repo.Update(c, user.ID, user)
+}
+func (ts *userService) RefreshToken(c context.Context, tokenString string) (model.AuthResponse, error) {
+	var Authres model.AuthResponse
+	queToken, err := ts.jwt.ParseToken(tokenString)
+	if err != nil {
+		return Authres, err
+	}
+	refreshToken, err := ts.RefreshTokenRepo.GetByJTI(c, queToken.ID)
+	if err != nil {
+		return Authres, err
+	}
+	if refreshToken.Revoked_at != nil || refreshToken.Expires_at.Before(time.Now()) {
+		return Authres, errs.ErrAuth
+	}
+	accessToken, accessExpiresAt, err := ts.jwt.GenerateAccessToken(queToken.ID, queToken.Roles)
+	Authres.AccessToken = accessToken
+	Authres.ExpiresAt = accessExpiresAt
+	Authres.TokenType = "Bearer"
+	return Authres, nil
 }

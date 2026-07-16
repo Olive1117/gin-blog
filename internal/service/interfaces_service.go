@@ -19,17 +19,18 @@ type ArticleService interface {
 }
 type CategoryService interface {
 	BaseService[model.Category]
-	List(ctx context.Context, que model.PageQuery, filter *model.Category) (model.PageResult[model.Category], error)
+	List(c context.Context, que model.PageQuery, filter *model.Category) (model.PageResult[model.Category], error)
 }
 type TagService interface {
 	BaseService[model.Tag]
-	List(ctx context.Context, que model.PageQuery, filter *model.Tag) (model.PageResult[model.Tag], error)
+	List(c context.Context, que model.PageQuery, filter *model.Tag) (model.PageResult[model.Tag], error)
 }
 type UserService interface {
 	BaseService[model.User]
-	Login(c context.Context, req model.LoginRequest) (model.AuthResponse, error)
+	Login(c context.Context, req model.LoginRequest, userInfo model.RefreshTokens) (model.AuthResponse, model.RefreshCookie, error)
+	RefreshToken(c context.Context, tokenString string) (model.AuthResponse, error)
 	ChangePassword(c context.Context, username string, oldPassword string, newPassword string) error
-	List(ctx context.Context, que model.PageQuery, filter *model.User) (model.PageResult[model.User], error)
+	List(c context.Context, que model.PageQuery, filter *model.User) (model.PageResult[model.User], error)
 }
 type FriendLinkService interface {
 	BaseService[model.FriendLink]

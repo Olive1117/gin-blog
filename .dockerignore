@@ -1,0 +1,41 @@
+# Git 和版本控制
+.git
+.gitignore
+
+# Docker 自身
+Dockerfile
+.dockerignore
+docker-compose*
+
+# 编辑器/IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# Go 构建产物
+*.exe
+*.dll
+*.so
+*.dylib
+olive-blog-api
+/tmp
+*.out
+/logs
+
+# 测试和文档
+*_test.go
+/test
+/tests
+/docs
+
+# 本地开发配置
+.env
+.env.*
+*.local
+/config.local.yaml

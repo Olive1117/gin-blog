@@ -8,7 +8,7 @@ type HandlerContainer struct {
 	Category   CategoryHandler
 	Tag        TagHandler
 	User       UserHandler
-	FriendLink friendlinkHandler
+	FriendLink FriendLinkHandler
 }
 type BaseHandler interface {
 	Get(c *gin.Context)
@@ -34,6 +34,7 @@ type UserHandler interface {
 	BaseHandler
 	GetMe(c *gin.Context)
 	Login(c *gin.Context)
+	RefreshToken(c *gin.Context)
 	ChangePassword(c *gin.Context)
 }
 type FriendLinkHandler interface {

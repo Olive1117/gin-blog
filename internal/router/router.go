@@ -43,6 +43,10 @@ func InitRouter(router *gin.Engine, handlerContainer *handler.HandlerContainer, 
 	// 用户相关路由
 	api.POST("/login", handlerContainer.User.Login)
 	api.POST("/users", handlerContainer.User.Create)
+	api.POST("/refresh", handlerContainer.User.RefreshToken)
+	// 友链相关路由
+	api.GET("/friendlinks", handlerContainer.FriendLink.List)
+	api.GET("/friendlinks/:id", handlerContainer.FriendLink.Get)
 
 	// 需要认证的路由组
 	auth := api.Group("")
@@ -72,4 +76,8 @@ func InitRouter(router *gin.Engine, handlerContainer *handler.HandlerContainer, 
 	auth.GET("/users/:id", handlerContainer.User.Get)
 	auth.GET("/users", handlerContainer.User.List)
 	auth.GET("/users/me", handlerContainer.User.GetMe)
+	// 友链相关路由
+	auth.POST("/friendlinks", handlerContainer.FriendLink.Create)
+	auth.DELETE("/friendlinks/:id", handlerContainer.FriendLink.Delete)
+	auth.PUT("/friendlinks/:id", handlerContainer.FriendLink.Update)
 }

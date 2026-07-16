@@ -2,13 +2,17 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/Olive1117/gin-blog/internal/model"
 	"gorm.io/gorm"
 )
 
-type BaseRepo[T any] interface {
+type DBConn interface {
 	Conn(c context.Context) *gorm.DB
+}
+type BaseRepo[T any] interface {
+	DBConn
 	Create(c context.Context, entity *T) error
 	Delete(c context.Context, id int64) error
 	FindById(c context.Context, id int64, preloads ...string) (T, error)
@@ -45,4 +49,13 @@ type UserRepo interface {
 type FriendLinkRepo interface {
 	BaseRepo[model.FriendLink]
 	List(context.Context, model.PageQuery) (model.PageResult[model.FriendLink], error)
+}
+type RefreshTokenRepo interface {
+	DBConn
+	Create(context.Context, model.RefreshTokens) error
+	GetByJTI(context.Context, string) (model.RefreshTokens, error)
+	DeleteByJTI(context.Context, string) error
+	RevokeByUser(context.Context, int64) error
+	RevokeByJTI(context.Context, string) error
+	CleanupExpired(ctx context.Context, before time.Time) error
 }

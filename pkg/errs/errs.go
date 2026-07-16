@@ -38,6 +38,7 @@ var (
 	ErrExistEmail            = New(http.StatusBadRequest, 10008, "邮箱已存在")
 	ErrRegisterFail          = New(http.StatusInternalServerError, 10009, "注册失败")
 	ErrPasswordIncorrect     = New(http.StatusBadRequest, 10010, "密码错误")
+	ErrNotExistRefreshToken  = New(http.StatusBadRequest, 10011, "刷新令牌不存在")
 	ErrNotExistArticle       = New(http.StatusNotFound, 20001, "文章不存在")
 	ErrNotExistCategory      = New(http.StatusNotFound, 30001, "分类不存在")
 	ErrExistCategory         = New(http.StatusBadRequest, 30002, "分类已存在")

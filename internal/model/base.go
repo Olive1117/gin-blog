@@ -62,3 +62,8 @@ type PageResponse[T any] struct {
 	PageSize int   `json:"page_size"`
 	Total    int64 `json:"total"`
 }
+
+type RefreshCookie struct {
+	RefreshToken string
+	ExpiresAt    time.Time
+}

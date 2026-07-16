@@ -3,6 +3,7 @@ package model
 import (
 	"time"
 
+	"github.com/Olive1117/gin-blog/pkg/idgen"
 	"github.com/Olive1117/gin-blog/pkg/utils"
 	"gorm.io/gorm"
 )
@@ -106,4 +107,22 @@ type Diary struct {
 	Weather   string     `json:"weather" gorm:"size:20;default:'';comment:天气"`
 	DiaryDate *time.Time `json:"diary_date" gorm:"type:date;not null;comment:日记日期;index"`
 	IsPublic  bool       `json:"is_public" gorm:"default:false;comment:是否公开"`
+}
+
+type RefreshTokens struct {
+	ID          int64      `gorm:"primaryKey;autoIncrement:false" json:"id,string"`
+	UserID      int64      `json:"user_id    " gorm:"not null;index:idx_user_id;comment:用户id"`
+	Jti         string     `json:"jti        " gorm:"size:255;not null;uniqueIndex;comment:唯一标识"`
+	Device_info string     `json:"device_info" gorm:"size:255;comment:设备信息"`
+	Ip_address  string     `json:"ip_address " gorm:"size:255;comment:ip地址"`
+	Expires_at  *time.Time `json:"expires_at " gorm:"not null;index:idx_expires_at;comment:过期时间"`
+	Created_at  *time.Time `json:"created_at " gorm:"comment:创建时间"`
+	Revoked_at  *time.Time `json:"revoked_at " gorm:"comment:撤销时间"`
+}
+
+func (b *RefreshTokens) BeforeCreate(tx *gorm.DB) (err error) {
+	if b.ID == 0 {
+		b.ID = idgen.NextID()
+	}
+	return
 }

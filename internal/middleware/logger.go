@@ -19,8 +19,8 @@ func GinLogger() gin.HandlerFunc {
 		// 获取请求跟踪id，没有请求ai则uuid生成
 		traceID := c.GetHeader("X-Trace-ID")
 		if traceID == "" {
-			uuid := uuid.NewString()
-			traceID = uuid
+			id := uuid.NewString()
+			traceID = id
 		}
 		// 注入traceID供logger或其他使用
 		newctx := logger.SetTraceIDCtx(c.Request.Context(), traceID)

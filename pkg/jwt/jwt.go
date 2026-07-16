@@ -26,18 +26,19 @@ func NewJWT(secret string, issuer string) *JWTHandler {
 }
 
 type Claims struct {
-	UserID   int64  `json:"user_id"`
-	Username string `json:"username"`
+	Type  string   `json:"type"`
+	Roles []string `json:"roles"`
 	jwt.RegisteredClaims
 }
 
-func (j *JWTHandler) GenerateToken(userID int64, username string) (string, time.Time, error) {
+func (j *JWTHandler) GenerateAccessToken(userID string, roles []string) (string, time.Time, error) {
 	issuedAt := time.Now()
-	expirationTime := issuedAt.Add(3 * time.Hour)
+	expirationTime := issuedAt.Add(15 * time.Minute)
 	claims := Claims{
-		UserID:   userID,
-		Username: username,
+		Type:  "Access",
+		Roles: roles,
 		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   userID,
 			IssuedAt:  jwt.NewNumericDate(issuedAt),
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			Issuer:    j.issuer,
@@ -50,9 +51,30 @@ func (j *JWTHandler) GenerateToken(userID int64, username string) (string, time.
 	}
 	return tokenString, expirationTime, nil
 }
+func (j *JWTHandler) GenerateRefreshToken(userID string, roles []string, tokenID string) (string, time.Time, error) {
+	issuedAt := time.Now()
+	expirationTime := issuedAt.Add(7 * 24 * time.Hour)
+	claims := Claims{
+		Type:  "Refresh",
+		Roles: roles,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   userID,
+			IssuedAt:  jwt.NewNumericDate(issuedAt),
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+			Issuer:    j.issuer,
+			ID:        tokenID,
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(j.secret)
+	if err != nil {
+		return "", time.Time{}, err
+	}
+	return tokenString, expirationTime, nil
+}
 
 func (j *JWTHandler) ParseToken(tokenString string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
